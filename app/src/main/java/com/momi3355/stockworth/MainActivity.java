@@ -17,6 +17,7 @@ import com.momi3355.stockworth.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private StockData stockData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

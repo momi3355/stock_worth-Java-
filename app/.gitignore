@@ -1,2 +1,4 @@
 /build
 /src/main/python/.idea/
+/src/main/res/raw/
+/src/main/python/*.json
