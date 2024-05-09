@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.chaquo.python.Python;
+import com.momi3355.stockworth.DataController;
 import com.momi3355.stockworth.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
@@ -26,12 +27,11 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        Python py = Python.getInstance();
-        String result = py.getModule("hello").callAttr("say_hello").toString();
+        //String result = py.getModule("hello").callAttr("say_hello").toString();
 
-        final TextView textView = binding.textHome;
+        //final TextView textView = binding.textHome;
         //homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        textView.setText(result);
+        //textView.setText(result);
         return root;
     }
 

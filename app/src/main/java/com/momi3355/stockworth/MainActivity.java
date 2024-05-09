@@ -1,6 +1,7 @@
 package com.momi3355.stockworth;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
@@ -14,10 +15,14 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.momi3355.stockworth.databinding.ActivityMainBinding;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private StockData stockData;
+    private DataController controller;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,15 @@ public class MainActivity extends AppCompatActivity {
         if (!Python.isStarted()) {
             Python.start(new AndroidPlatform(this));
         }
+        Python py = Python.getInstance();
+
+        Log.d("MainActivity",
+                py.getModule("stock").callAttr("temp").toString());
+//        try {
+//            new DataController(this, py).load();
+//        } catch (Exception e) {
+//            Log.e("MainActivity", "onCreate: "+e.getMessage());
+//        }
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each

@@ -6,12 +6,12 @@ import pykrx
 from numpy import double
 from pykrx import stock
 from pykrx import bond
-import yfinance as yf
+#import yfinance as yf
 import pandas as pd
 import exchange_calendars as ecals
 
 
-def update_tickers(date):
+def getTickers(date):
     tickers = stock.get_market_ticker_list(market='KOSPI')
     ticker_dict = dict()
     ticker_dict['lib_name'] = 'pykrx'
@@ -19,17 +19,7 @@ def update_tickers(date):
     ticker_dict['update_time'] = date
     ticker_dict['count'] = len(tickers)
     ticker_dict['data'] = tickers
-    with open('ticker_data.json', 'w+') as f:
-        json.dump(ticker_dict, f, indent=3)
-        print('ticker_data.json 파일이 생성 되었습니다.')
-
-
-def getTickers(date):
-    if not os.path.exists('ticker_data.json'):
-        update_tickers(date)
-    with open('ticker_data.json', 'r+') as f:
-        ticker_json = json.load(f)
-        return ticker_json['data']
+    return json.dumps(ticker_dict, indent=3)
 
 
 def update_tickerInfo(ticker, updateTime, previous_open):
@@ -71,24 +61,14 @@ def update_marketInfo(market, date):
     return market_list
 
 
-def update_allMarketInfo(date):
+def getMarketInfo(date):
     all_market_dict = dict()
     all_market_dict['lib_name'] = 'pykrx'
     all_market_dict['version'] = getVersion()
     all_market_dict['update_time'] = date
     all_market_dict['item_count'] = len(getTickers(date))
     all_market_dict['data'] = update_marketInfo(['KOSPI'], date)
-    with open('stock_data.json', 'w+') as f:
-        json.dump(all_market_dict, f, ensure_ascii=False, indent=3)
-        print('stock_data.json 파일이 생성 되었습니다.')
-
-
-def getMarketInfo(date):
-    if not os.path.exists('stock_data.json'):
-        update_allMarketInfo(date)
-    with open('stock_data.json', 'r+') as f:
-        stock_json = json.load(f)
-        return stock_json
+    return json.dumps(all_market_dict, ensure_ascii=False, indent=3)
 
 
 def update_market(market, date):
@@ -107,21 +87,18 @@ def update_market(market, date):
         market_dict['price'] = round(item['종가'], 2)
         market_list.append(market_dict)
     market_info_dict['data'] = market_list
-    with open('market_data.json', 'w+') as f:
-        json.dump(market_info_dict, f, ensure_ascii=False, indent=3)
-        print('market_data.json 파일이 생성 되었습니다.')
+    return json.dumps(market_info_dict, ensure_ascii=False, indent=3)
 
 
 def getMarket(date):
-    if not os.path.exists('market_data.json'):
-        update_market(['KOSPI', 'KOSDAQ'], date)
-    with open('market_data.json', 'r+') as f:
-        stock_json = json.load(f)
-        return stock_json
+    return update_market(['KOSPI', 'KOSDAQ'], date)
 
 
 def getVersion():
     return pykrx.__version__
+
+def temp():
+    return str(stock.get_index_price_change('20240508', '20240508', 'KOSPI').iloc[0]['종가'])
 
 
 if __name__ == "__main__":
@@ -137,5 +114,6 @@ if __name__ == "__main__":
     # df = stock.get_market_ohlcv('20240503', now.strftime('%Y%m%d'), '005930', 'd')
     # temp_df = pd.DataFrame(df['종가'])
     # print(temp_df.to_json())
-    getMarketInfo(data)
-    getMarket(now.strftime('%Y%m%d'))
+    # getMarketInfo(data)
+    print(getMarket(now.strftime('%Y%m')+'08'))
+    print(temp())
