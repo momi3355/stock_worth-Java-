@@ -35,14 +35,15 @@ public class MainActivity extends AppCompatActivity {
             Python.start(new AndroidPlatform(this));
         }
         Python py = Python.getInstance();
+        controller = new DataController(this, py);
 
-        Log.d("MainActivity",
-                py.getModule("stock").callAttr("temp").toString());
-//        try {
-//            new DataController(this, py).load();
-//        } catch (Exception e) {
-//            Log.e("MainActivity", "onCreate: "+e.getMessage());
-//        }
+//        Log.d("MainActivity",
+//                py.getModule("stock").callAttr("temp").toString());
+        try {
+            controller.load();
+        } catch (Exception e) {
+            Log.e("MainActivity", "onCreate: "+e.getMessage());
+        }
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each

@@ -6,7 +6,7 @@ import pykrx
 from numpy import double
 from pykrx import stock
 from pykrx import bond
-#import yfinance as yf
+# import yfinance as yf
 import pandas as pd
 import exchange_calendars as ecals
 
@@ -22,7 +22,7 @@ def getTickers(date):
     return json.dumps(ticker_dict, indent=3)
 
 
-def update_tickerInfo(ticker, updateTime, previous_open):
+def update_tickerInfo(ticker, updateTime):
     info = stock.get_market_ohlcv(updateTime, updateTime, ticker, 'd')
     stock_info = dict()
     if not info.empty:
@@ -32,32 +32,24 @@ def update_tickerInfo(ticker, updateTime, previous_open):
         stock_info['price'] = int(info['종가'].values[0])
         stock_info['volume'] = int(info['거래량'].values[0])
         print(stock_info)
-    else:
-        if previous_open != '0':  # date를 -1해준다
-            return update_tickerInfo(ticker, previous_open, '0')
     return stock_info
 
 
 def update_marketInfo(market, date):
-    now = datetime.datetime.now()
     market_list = list()
-    xcals_kr = ecals.get_calendar('XKRX')  # 한국코드
-    previous_open = xcals_kr.previous_open(now).strftime('%Y-%m-%d')  # 이전 개장일
-    isRunMarket = xcals_kr.is_session(now.strftime('%Y-%m-%d'))  # 지금 휴장인지 확인.
     for market_name in market:
         stock_list = list()
         market_dict = dict()
         market_dict['market_name'] = market_name
-        market_dict['isRunMarket'] = isRunMarket
+        market_dict['isRunMarket'] = isRunMarket(ecals.get_calendar('XKRX'))
 
         for i, ticker in getTickers(date):
-            updateTime = now.strftime('%Y%m%d')
-            stock_list.append(update_tickerInfo(ticker, updateTime, previous_open))
+            updateTime = date
+            stock_list.append(update_tickerInfo(ticker, updateTime))
             if i % 500 == 0:
                 time.sleep(0.1)
         market_dict['stock_data'] = stock_list
         market_list.append(market_dict)
-    getMarket(previous_open)
     return market_list
 
 
@@ -94,8 +86,21 @@ def getMarket(date):
     return update_market(['KOSPI', 'KOSDAQ'], date)
 
 
+def isRunMarket(countryCode):
+    now = datetime.datetime.now()
+    cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
+    return cals.is_session(now.strftime('%Y-%m-%d'))
+
+
+def getPreviousOpen(countryCode):
+    now = datetime.datetime.now()
+    cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
+    return cals.previous_open(now).strftime('%Y%m%d')  # 이전 개장일
+
+
 def getVersion():
     return pykrx.__version__
+
 
 def temp():
     return str(stock.get_index_price_change('20240508', '20240508', 'KOSPI').iloc[0]['종가'])
@@ -115,5 +120,5 @@ if __name__ == "__main__":
     # temp_df = pd.DataFrame(df['종가'])
     # print(temp_df.to_json())
     # getMarketInfo(data)
-    print(getMarket(now.strftime('%Y%m')+'08'))
+    print(getMarket(now.strftime('%Y%m') + '08'))
     print(temp())
