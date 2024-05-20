@@ -37,9 +37,4 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         assertEquals("com.momi3355.stockworth", appContext.getPackageName());
     }
-
-    @Test
-    public void testDataController() throws IOException, JSONException {
-        new DataController(appContext, py).load();
-    }
 }

@@ -50,14 +50,12 @@ enum DataType {
     }
 }
 
-//이놈은 싱글톤 으로 . (2개이상 있으면 안되기 때문,)
 public class DataController {
 
     private final Python py;
     private final Context context;
 
     private final JSONObject[] stockData = new JSONObject[DataType.getLength()];
-
 
     public DataController(Context context, Python py) {
         this.context = context;
@@ -74,7 +72,7 @@ public class DataController {
         PyObject stockObject = py.getModule("stock");
         String now = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         /* [휴장시간확인] */
-        if (!Boolean.getBoolean(stockObject.callAttr("isRunMarket", "XKRX").toString())) {
+        if (!Boolean.parseBoolean(stockObject.callAttr("isRunMarket", "XKRX").toString())) {
             //이전 개장시간 추출;
             now = stockObject.callAttr("getPreviousOpen", "XKRX").toString();
         }
@@ -82,18 +80,17 @@ public class DataController {
         String data_string = "";
         switch (dateType) {
 //            case stock_data:
-//                data_string = stockObject.callAttr("getMarketInfo", now).toString();
+//                data_string = stockObject.callAttr("getMarketInfo", now).toString(); break;
 //            case ticker_data:
-//                data_string = stockObject.callAttr("getTickers", now).toString();
+//                data_string = stockObject.callAttr("getTickers", now).toString(); break;
             case market_data:
-                data_string = stockObject.callAttr("getMarket", now).toString();
+                data_string = stockObject.callAttr("getMarket", now).toString(); break;
             default:
-                Log.e("DataController", "지금 파일포맷을 알 수 없습니다.");
+                Log.e("DataController", "지금 파일포맷을 알 수 없습니다. ("+dateType+")");
         }
         if (data_string.equals("")) {
             //에러 표기 요함
         }
-        Log.d("DataController", "getFileInputStream: "+data_string);
         /* [파일 쓰기] */
         output.write(data_string.getBytes(StandardCharsets.UTF_8));  //파일 저장
         output.close();
@@ -102,7 +99,10 @@ public class DataController {
 
     private FileInputStream getFileInputStream(DataType dateType) throws IOException {
         try {
-            return context.openFileInput(dateType.getFileName());
+            FileInputStream file = context.openFileInput(dateType.getFileName());
+            if (file.available() == 0) //isEmpty();
+                throw new FileNotFoundException(dateType.getFileName());
+            return file;
         } catch (FileNotFoundException e) {
             return newFile(dateType);
         }
@@ -160,7 +160,7 @@ public class DataController {
         } catch (IOException e) {
             Log.e("DataController", "getJsonString: "+e.getMessage());
         } finally {
-            Log.d("DataController", "load: "+json.replace('\n', ' '));
+            Log.d("DataController", "getJsonString(load): "+json.replace('\n', ' '));
         }
         return json;
     }

@@ -1,5 +1,6 @@
 package com.momi3355.stockworth;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -22,7 +23,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private DataController controller;
+    private DataService service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +36,12 @@ public class MainActivity extends AppCompatActivity {
             Python.start(new AndroidPlatform(this));
         }
         Python py = Python.getInstance();
-        controller = new DataController(this, py);
-
+        service = new DataService(new DataController(this, py));
+        Intent intent = new Intent(MainActivity.this, DataService.class);
 //        Log.d("MainActivity",
 //                py.getModule("stock").callAttr("temp").toString());
         try {
-            controller.load();
+            startService(intent);
         } catch (Exception e) {
             Log.e("MainActivity", "onCreate: "+e.getMessage());
         }
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
     }
 
 }
