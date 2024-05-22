@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,15 +52,18 @@ enum DataType {
 }
 
 public class DataController {
-
     private final Python py;
     private final Context context;
 
     private final JSONObject[] stockData = new JSONObject[DataType.getLength()];
 
-    public DataController(Context context, Python py) {
+    public DataController(Context context) {
         this.context = context;
-        this.py = py;
+        if (!Python.isStarted()) {
+            //싱글톤 패턴이라서 아무곳이나 getInstance()를 가지고 오면 사용이 가능.
+            Python.start(new AndroidPlatform(this.context));
+        }
+        py = Python.getInstance();
     }
 
     public String getPreviousOpen() {

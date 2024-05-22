@@ -3,6 +3,7 @@ package com.momi3355.stockworth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
@@ -32,16 +33,13 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        if (!Python.isStarted()) {
-            Python.start(new AndroidPlatform(this));
-        }
-        Python py = Python.getInstance();
-        service = new DataService(new DataController(this, py));
+        service = new DataService();
         Intent intent = new Intent(MainActivity.this, DataService.class);
 //        Log.d("MainActivity",
 //                py.getModule("stock").callAttr("temp").toString());
         try {
             startService(intent);
+            Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e("MainActivity", "onCreate: "+e.getMessage());
         }
