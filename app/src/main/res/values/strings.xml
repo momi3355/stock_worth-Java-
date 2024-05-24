@@ -3,6 +3,6 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="channel_name">data_service_channel</string>
-    <string name="channel_description">주식의 정보 저장</string>
+    <string name="channel_name">실시간 주식 정보</string>
+    <string name="channel_description">2분마다 주식 정보를 업데이트</string>
 </resources>

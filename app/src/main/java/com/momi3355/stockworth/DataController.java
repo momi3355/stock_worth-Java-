@@ -7,22 +7,17 @@ import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 enum DataType {
     //stock_data("stock_data.json", 0),
@@ -146,7 +141,6 @@ public class DataController {
     public void update() throws IOException, JSONException {
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
-            //TODO : 이제 thread를 통해서 2분마다 업데이트를 하는 로직 필요.
             FileInputStream input = newFile(dataType);
             stockData[dataType.getIndex()] = new JSONObject(getJsonString(input));
             input.close();

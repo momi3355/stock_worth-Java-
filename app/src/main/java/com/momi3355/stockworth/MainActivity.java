@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.chaquo.python.Python;
-import com.chaquo.python.android.AndroidPlatform;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,10 +14,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.momi3355.stockworth.databinding.ActivityMainBinding;
-
-import org.json.JSONException;
-
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 //                py.getModule("stock").callAttr("temp").toString());
         try {
             startService(intent);
+            //bindService(intent);
             Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e("MainActivity", "onCreate: "+e.getMessage());
