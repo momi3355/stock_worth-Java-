@@ -4,6 +4,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -11,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -24,20 +28,25 @@ public class DataService extends Service {
 
     private NotificationManager notificationManager; //알람 메니져
 
-    private long beforeTime = 0; //이전 알람시간
-    private long updateTime = 60; //업데이트시간(초) yyyyMMddHHmmss
-
     @Override
     public void onCreate() {
         super.onCreate();
         //채널 생성(오래오버전 부터는 필수)
         createNotificationChannel(CHANNEL_ID, NotificationManager.IMPORTANCE_LOW, //체널, 우선순위
                 getString(R.string.channel_name), getString(R.string.channel_description)); //이름, 설명부여
-        NotificationCompat.Builder stockBuilder = getStockNotification("Service is running...");
+        NotificationCompat.Builder stockBuilder = getStockNotification("주식정보 로딩 중....");
         /* TODO : 팝업창 띄어서 허용을 해야한다. */
 
         // Foreground Service로 실행
         startForeground(NOTIFICATION_ID, stockBuilder.build());
+
+        try {
+            controller.load();
+        } catch (IOException e) {
+            Log.e("DataService", "onCreate: IO에러("+e.getMessage()+")");
+        } catch (JSONException e) {
+            Log.e("DataService", "onCreate: JSON에러("+e.getMessage()+")");
+        }
     }
 
     @Nullable
@@ -51,19 +60,8 @@ public class DataService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("DataService", "onStartCommand : ");
         // TODO : 여기에서 포그라운드 서비스.
-        while (true) { //나중에 Thread로 처리해야한다.
-            long nowTime = Long.parseLong(new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(new Date()));
-            if (beforeTime == 0) {
-                beforeTime = nowTime;
-            } else if (nowTime - beforeTime >= updateTime) {
-                Log.d("DataService", nowTime+":"+beforeTime);
-                //manager.notify() 를 이용하면 알람 내용변경 가능하다.
-                notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
-                break;
-            } else {
-                Thread.yield();
-            }
-        }
+        //manager.notify() 를 이용하면 알람 내용변경 가능하다.
+        //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
 
         return START_NOT_STICKY; //서비스가 강제 종료되어도 재시작하지 않음.
     }

@@ -20,10 +20,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 enum DataType {
-    //stock_data("stock_data.json", 0),
-    //ticker_data("ticker_data.json", 1),
-    //market_data("market_data.json", 2);
-    market_data("market_data.json", 0);
+    stock_data("stock_data.json", 0),
+    ticker_data("ticker_data.json", 1),
+    market_data("market_data.json", 2);
 
     private final String fileName;
     private final int index;
@@ -78,10 +77,10 @@ public class DataController {
         /* [주식 정보 추출] */
         String data_string = "";
         switch (dateType) {
-//            case stock_data:
-//                data_string = stockObject.callAttr("getMarketInfo", now).toString(); break;
-//            case ticker_data:
-//                data_string = stockObject.callAttr("getTickers", now).toString(); break;
+            case stock_data:
+                data_string = stockObject.callAttr("getMarketInfo", now).toString(); break;
+            case ticker_data:
+                data_string = stockObject.callAttr("getTickers", now).toString(); break;
             case market_data:
                 data_string = stockObject.callAttr("getMarket", now).toString(); break;
             default:
