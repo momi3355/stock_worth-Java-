@@ -7,6 +7,7 @@ import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,8 +49,7 @@ enum DataType {
 public class DataController {
     private final Python py;
     private final Context context;
-
-    private final JSONObject[] stockData = new JSONObject[DataType.getLength()];
+    private final AppData data;
 
     public DataController(Context context) {
         this.context = context;
@@ -58,6 +58,7 @@ public class DataController {
             Python.start(new AndroidPlatform(this.context));
         }
         py = Python.getInstance();
+        data = AppData.getInstance();
     }
 
     public String getPreviousOpen() {
@@ -65,8 +66,8 @@ public class DataController {
         return stockObject.callAttr("getPreviousOpen", "XKRX").toString();
     }
 
-    private FileInputStream newFile(DataType dateType) throws IOException {
-        FileOutputStream output = context.openFileOutput(dateType.getFileName(), Context.MODE_PRIVATE);
+    private FileInputStream newFile(DataType dataType) throws IOException {
+        FileOutputStream output = context.openFileOutput(dataType.getFileName(), Context.MODE_PRIVATE);
         PyObject stockObject = py.getModule("stock");
         String now = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         /* [휴장시간확인] */
@@ -76,7 +77,7 @@ public class DataController {
         }
         /* [주식 정보 추출] */
         String data_string = "";
-        switch (dateType) {
+        switch (dataType) {
             case stock_data:
                 data_string = stockObject.callAttr("getMarketInfo", now).toString(); break;
             case ticker_data:
@@ -84,7 +85,7 @@ public class DataController {
             case market_data:
                 data_string = stockObject.callAttr("getMarket", now).toString(); break;
             default:
-                Log.e("DataController", "지금 파일포맷을 알 수 없습니다. ("+dateType+")");
+                Log.e("DataController", "지금 파일포맷을 알 수 없습니다. ("+dataType+")");
         }
         if (data_string.equals("")) {
             //에러 표기 요함
@@ -92,17 +93,18 @@ public class DataController {
         /* [파일 쓰기] */
         output.write(data_string.getBytes(StandardCharsets.UTF_8));  //파일 저장
         output.close();
-        return context.openFileInput(dateType.getFileName());
+        return context.openFileInput(dataType.getFileName());
     }
 
-    private FileInputStream getFileInputStream(DataType dateType) throws IOException {
+    private FileInputStream getFileInputStream(DataType dataType) throws IOException {
         try {
-            FileInputStream file = context.openFileInput(dateType.getFileName());
+            FileInputStream file = context.openFileInput(dataType.getFileName());
             if (file.available() == 0) //isEmpty();
-                throw new FileNotFoundException(dateType.getFileName());
+                throw new FileNotFoundException(dataType.getFileName());
             return file;
         } catch (FileNotFoundException e) {
-            return newFile(dateType);
+            Log.e("DataController", "getFileInputStream: "+e.getMessage());
+            return newFile(dataType);
         }
     }
 
@@ -111,17 +113,31 @@ public class DataController {
             DataType dataType = DataType.values()[i];
 
             FileInputStream fileInput = getFileInputStream(dataType);
-            stockData[i] = new JSONObject(getJsonString(fileInput));
-            update(stockData[i], dataType); //일단 로딩한다음 업데이트 확인.
-//            Log.d("DataController", "update_time: "+stockData[i].getString("update_time"));
-//            JSONArray array_data = stockData[i].getJSONArray("data");
-//            for (int j = 0; j < array_data.length(); j++) {
-//                JSONObject data = array_data.getJSONObject(j);
-//                Log.d("DataController", "data("+j+")_market_name: "+data.getString("market_name"));
-//                Log.d("DataController", "data("+j+")_rate: "+data.getDouble("rate"));
-//                Log.d("DataController", "data("+j+")_price: "+data.getDouble("price"));
-//            }
-            fileInput.close();
+            try {
+                data.stockData[i] = new JSONObject(DataController.getJsonString(fileInput));
+                JSONArray array_data = data.stockData[dataType.getIndex()].getJSONArray("data");
+                if (array_data.length() == 0) //정보가 없을 경우
+                    throw new FileNotFoundException(dataType.getFileName());
+            } catch (NullPointerException | JSONException e) {
+                /* 여기오는 경우 */
+                // 1. JSON에서 data겍체를 찾을 수 없는 경우.
+                // 2. 위에 있는 if (array_data.length() == 0) 에서 정보을 찾을 수 없는 경우.
+                // 3. JSON파일이 손상된 경우.
+                Log.w("DataController", "load: "+e.getMessage());
+                fileInput.close(); // 파일 닫고, 다시 열기
+                fileInput = newFile(dataType);
+            } finally {
+                update(data.stockData[i], dataType); //일단 로딩한다음 업데이트 확인.
+//                Log.d("DataController", "update_time: "+data.stockData[i].getString("update_time"));
+//                JSONArray array_data = data.stockData[i].getJSONArray("data");
+//                for (int j = 0; j < array_data.length(); j++) {
+//                    JSONObject item = array_data.getJSONObject(j);
+//                    Log.d("DataController", "data("+j+")_market_name: "+item.getString("market_name"));
+//                    Log.d("DataController", "data("+j+")_rate: "+item.getDouble("rate"));
+//                    Log.d("DataController", "data("+j+")_price: "+item.getDouble("price"));
+//                }
+                fileInput.close();
+            }
         }
     }
 
@@ -132,7 +148,7 @@ public class DataController {
         Log.d("DataController", "time: "+updateTime+" - "+previousOpen);
         if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
             FileInputStream input = newFile(dataType);
-            stockData[dataType.getIndex()] = new JSONObject(getJsonString(input));
+            data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
             input.close();
         }
     }
@@ -141,12 +157,12 @@ public class DataController {
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
             FileInputStream input = newFile(dataType);
-            stockData[dataType.getIndex()] = new JSONObject(getJsonString(input));
+            data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
             input.close();
         }
     }
 
-    private String getJsonString(InputStream is) {
+    private static String getJsonString(InputStream is) {
         String json = "";
         try {
             int fileSize = is.available();

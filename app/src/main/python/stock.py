@@ -70,7 +70,7 @@ def update_market(market, date):
     market_info_dict['version'] = getVersion()
     market_info_dict['update_time'] = date  # 시:분:초 를 적어도 된다.
     market_info_dict['item_count'] = len(market)
-    updateTime = getPreviousOpen('XKRX')
+    updateTime = getPreviousOpen('XKRX')  # TODO 이른 아침이면 전날로 표기요함.
     market_list = list()
     for market_name in market:
         item = stock.get_index_price_change(updateTime, updateTime, market_name).iloc[0]
@@ -85,18 +85,22 @@ def update_market(market, date):
 
 
 def getMarket(date):
-    return update_market(['KOSPI', 'KOSDAQ'], date)
+    return update_market(['KOSPI'], date)
 
 
 def isRunMarket(countryCode):
     now = datetime.datetime.now()
     cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
+    if now.time().hour < 9:  # 장시간 전
+        now -= datetime.timedelta(days=1)
     return cals.is_session(now.strftime('%Y-%m-%d'))
 
 
 def getPreviousOpen(countryCode):
     now = datetime.datetime.now()
     cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
+    if now.time().hour < 9:  # 장시간 전
+        now -= datetime.timedelta(days=1)
     return cals.previous_open(now).strftime('%Y%m%d')  # 이전 개장일
 
 
