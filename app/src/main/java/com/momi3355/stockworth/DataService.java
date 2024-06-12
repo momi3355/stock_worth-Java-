@@ -59,15 +59,9 @@ public class DataService extends Service implements Serializable {
 
         // Foreground Service로 실행
         startForeground(NOTIFICATION_ID, stockBuilder.build());
-        // Background 서비스도 실행 요함.
+        // Background 서비스도 실행 요함. (설정으로 변경 가능)
 
-//        try {
-//            controller.load();
-//        } catch (IOException e) {
-//            Log.e("DataService", "onCreate: IO에러("+e.getMessage()+")");
-//        } catch (JSONException e) {
-//            Log.e("DataService", "onCreate: JSON에러("+e.getMessage()+")");
-//        }
+        // controller.load(); //로드는 'LoadingActivity' 에서 진행된다.
     }
 
     @Override
@@ -98,13 +92,14 @@ public class DataService extends Service implements Serializable {
             //포그라운드.
             try {
                 controller.update();
+                // TODO : 성공하면 알람내용 - 코스피의 주가 수정, 날짜-시간 출력. (우선순위 낮음)
             } catch (IOException | JSONException e) {
                 Log.e("DataService", "onStartCommand: "+e.getMessage());
             }
             //TODO : 메시지도 변경 요함
             //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
-        }, initialDelay.toMillis(), 20, TimeUnit.MINUTES);
-        //}, 0, 20, TimeUnit.MINUTES);
+        }, initialDelay.toMillis(), 20, TimeUnit.MINUTES); //이건 시간의 20분.
+        //}, 0, 20, TimeUnit.MINUTES); //이게 20분 마다 실행
         return START_NOT_STICKY; //서비스가 강제 종료되어도 재시작하지 않음.
     }
 

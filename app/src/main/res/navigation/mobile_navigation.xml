@@ -12,10 +12,16 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.momi3355.stockworth.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_market_info"
+        android:name="com.momi3355.stockworth.ui.market_info.MarketInfoFragment"
+        android:label="@string/title_market_info"
+        tools:layout="@layout/fragment_market_info" />
+
+    <fragment
+        android:id="@+id/navigation_ticker_info"
+        android:name="com.momi3355.stockworth.ui.ticker_info.TickerInfoFragment"
+        android:label="@string/title_ticker_info"
+        tools:layout="@layout/fragment_ticker_info" />
 
     <fragment
         android:id="@+id/navigation_notifications"

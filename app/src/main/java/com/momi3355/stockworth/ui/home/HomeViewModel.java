@@ -4,16 +4,24 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class HomeViewModel extends ViewModel {
+import com.momi3355.stockworth.AppData;
+import com.momi3355.stockworth.DataType;
 
-    private final MutableLiveData<String> mText;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+public class HomeViewModel extends ViewModel {
+    private MutableLiveData<JSONArray> market_data = new MutableLiveData<>();
 
     public HomeViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is home fragment");
+
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public void setMarket_data(JSONArray jsonArray) {
+        market_data.postValue(jsonArray);
+    }
+
+    public LiveData<JSONArray> getMarket_data() {
+        return market_data;
     }
 }

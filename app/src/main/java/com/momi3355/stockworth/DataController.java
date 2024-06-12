@@ -18,38 +18,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-
-enum DataType {
-    stock_data("stock_data.json", 0),
-    ticker_data("ticker_data.json", 1),
-    market_data("market_data.json", 2);
-
-    private final String fileName;
-    private final int index;
-
-    DataType(String fileName, int index) {
-        this.fileName = fileName;
-        this.index = index;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public static int getLength() {
-        return DataType.values().length;
-    }
-}
 
 public class DataController {
     private final Python py;
     private final Context context;
-    private final AppData data;
+    final AppData data;
 
     public DataController(Context context) {
         this.context = context;
@@ -147,6 +122,8 @@ public class DataController {
 
         Log.d("DataController", "time: "+updateTime+" - "+previousOpen);
         if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
+            int diff = Integer.parseInt(updateTime) - Integer.parseInt(previousOpen);
+            if (diff == 1 && LocalTime.now().getHour() < 9) return; //이른 아침
             FileInputStream input = newFile(dataType);
             data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
             input.close();

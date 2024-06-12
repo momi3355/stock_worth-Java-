@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">StockWorth</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_home">홈</string>
+    <string name="title_market_info">마켓정보</string>
+    <string name="title_ticker_info">종목정보</string>
+    <string name="title_notifications">알림</string>
     <string name="channel_name">실시간 주식 정보</string>
     <string name="channel_description">2분마다 주식 정보를 업데이트</string>
 </resources>

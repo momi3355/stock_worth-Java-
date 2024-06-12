@@ -21,18 +21,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.momi3355.stockworth.databinding.ActivityMainBinding;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private DataService dataService;
     private HandlerThread handlerThread;
     private Handler mainHandler;
     private Handler backgroundHandler;
+
     private boolean isService;
 
     ServiceConnection conn = new ServiceConnection() {
@@ -42,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
             DataService.LocalBinder dataBinder = (DataService.LocalBinder)service;
             dataService = dataBinder.getService();
             isService = true;
-
             // 백그라운드 스레드에서 backgroundRunnable 실행
             backgroundHandler.post(backgroundRunnable);
         }
@@ -53,13 +47,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    Runnable backgroundRunnable = new Runnable() {
-        private String beforeDate;
-
-        @Override
-        public void run() {
-
-        }
+    Runnable backgroundRunnable = () -> {
+        // 백그라운드 할거 없으면 삭제 요함.
     };
 
     @Override
@@ -77,8 +66,9 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
+        // navigation_name = ['home', 'market_info', 'ticker_info', 'notifications']
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+                R.id.navigation_home, R.id.navigation_market_info, R.id.navigation_ticker_info, R.id.navigation_notifications)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);

@@ -85,7 +85,7 @@ def update_market(market, date):
 
 
 def getMarket(date):
-    return update_market(['KOSPI'], date)
+    return update_market(['KOSPI', 'KOSDAQ'], date)
 
 
 def isRunMarket(countryCode):
@@ -114,7 +114,7 @@ def temp():
 
 if __name__ == "__main__":
     now = datetime.datetime.now()
-    data = now.strftime("%Y%m%d")
+    date = now.strftime("%Y%m%d")
     print(getVersion())
 
     # ticker = yf.Ticker('005930.KS')
@@ -127,8 +127,9 @@ if __name__ == "__main__":
     # print(temp_df.to_json())
     # getMarketInfo(data)
 
-    print(getMarket(data))
+    print(getMarket(date))
     if not isRunMarket('XKRX'):
         print(getPreviousOpen('XKRX'))
+    print(update_market(['KOSPI', 'KOSDAQ'], date))
     # print(getMarket(now.strftime('%Y%m') + '08'))
     # print(temp())

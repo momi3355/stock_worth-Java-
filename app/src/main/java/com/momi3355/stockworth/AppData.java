@@ -17,11 +17,13 @@ import org.json.JSONObject;
  * 
  * @see JSONObject 데이터가 저장되는 형식.
  */
-class AppData {
-    final JSONObject[] stockData = new JSONObject[DataType.getLength()];
+public class AppData {
+    public final JSONObject[] stockData = new JSONObject[DataType.getLength()];
     private static AppData instance;
 
-    public static AppData getInstance() {
+    private AppData() { }
+
+    public static synchronized AppData getInstance() {
         if (instance == null)
             instance = new AppData();
         return instance;
