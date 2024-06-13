@@ -10,7 +10,7 @@ public class TickerInfoViewModel extends ViewModel {
 
     public TickerInfoViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is notifications fragment");
+        mText.setValue("This is ticker info fragment");
     }
 
     public LiveData<String> getText() {

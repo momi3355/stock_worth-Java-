@@ -5,41 +5,34 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class DataService extends Service implements Serializable {
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 1; //포그라운드 알람_ID
     private static final String CHANNEL_ID = "실시간 주식 정보";
+    /** 데이터를 불러오고 저장하는 멤버변수
+     * @see AppData */
+    public final DataController controller = new DataController(this);
     /** 주식의 데이터를 관리하는 멤버변수
      * @see DataController */
     private final LocalBinder binder = new LocalBinder();
 
-    private ScheduledExecutorService scheduler;
-
     private NotificationManager notificationManager; //알람 메니져
-
-    public final DataController controller = new DataController(this);
+    private ScheduledExecutorService scheduler;
 
     // 바인터 필요없는거 같기도 하고(AppData로 불러오면 되기 때문에/)
     class LocalBinder extends Binder {
@@ -119,16 +112,16 @@ public class DataService extends Service implements Serializable {
     @NonNull
     private NotificationCompat.Builder getStockNotification(String text) {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notifications_black_24dp) //아이콘
-            .setContentTitle("Worth") //제목
-            .setContentText(text) //내용
-            .setOngoing(true); //사용자가 끄지못하도록하는것
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp) //아이콘
+                .setContentTitle("Worth") //제목
+                .setContentText(text) //내용
+                .setOngoing(true); //사용자가 끄지못하도록하는것
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(scheduler!= null) {
+        if (scheduler!= null) {
             scheduler.shutdown();
         }
     }

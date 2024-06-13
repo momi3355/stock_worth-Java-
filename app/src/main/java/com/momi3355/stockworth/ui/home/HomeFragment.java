@@ -1,9 +1,7 @@
 package com.momi3355.stockworth.ui.home;
 
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,17 +11,18 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 
-import com.chaquo.python.Python;
 import com.momi3355.stockworth.AppData;
-import com.momi3355.stockworth.DataController;
 import com.momi3355.stockworth.DataType;
 import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.databinding.FragmentHomeBinding;
+import com.momi3355.stockworth.ui.market_info.MarketInfoViewModel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,11 +31,41 @@ import org.json.JSONObject;
 public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    private final View.OnClickListener item_ClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            //[layout 버튼 이벤트]
+            // 1. Viewport를 [상세검색]이동.
+            // 2. 해당 종목을 검색
+
+            TextView textView = (TextView) ((LinearLayout) view).getChildAt(0);
+            if (textView != null) {
+                String text = textView.getText().toString();
+                MarketInfoViewModel marketInfoVM = new ViewModelProvider(requireActivity()).get(MarketInfoViewModel.class);
+                marketInfoVM.setMarketName(text);
+            }
+            // [view fragment 이동]
+            NavOptions navOptions = new NavOptions.Builder()
+                    .setPopUpTo(R.id.navigation_home, true) // 이전 목적지부터 시작하여 백스택에서 제거
+                    .build();
+
+            NavController navController = Navigation.findNavController(view);
+            navController.navigate(R.id.navigation_market_info, null, navOptions);
+        }
+    };
+
+    private final Observer<JSONArray> marketdata_observer = new Observer<JSONArray>() {
+        @Override
+        public void onChanged(JSONArray array) {
+            //데이터가 수정되면 실행
+            //사실 필요 없을 수도? (우선순위 낮음.)
+            //UI 수정
+        }
+    };
+
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         JSONObject[] appData = AppData.getInstance().stockData;
-        HomeViewModel homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
+        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -44,12 +73,10 @@ public class HomeFragment extends Fragment {
         TableLayout market_tableLayout = root.findViewById(R.id.allMarket_tableLayout);
         try {
             JSONArray data = appData[DataType.market_data.getIndex()].getJSONArray("data");
+            homeViewModel.getMarket_data().observe(getViewLifecycleOwner(), marketdata_observer);
             homeViewModel.setMarket_data(data);
-            homeViewModel.getMarket_data().observe(getViewLifecycleOwner(), newArray -> { //데이터가 수정되면 실행
-                //사실 필요 없을 수도? (우선순위 낮음.)
-                //UI 수정
-            });
             /* [지수 총합] */
+            // TODO : 밑에 있는 데이터를 'marketdata_observer'쪽으로 옴겨야 할수도 있다.
             TableRow tableRow = new TableRow(getActivity());
             int c = 0; //지수 총합이 Row가 2기때문에(1 ~ 2지정)
             for (int i = 0; i < data.length(); i++) {
@@ -65,34 +92,7 @@ public class HomeFragment extends Fragment {
                 item_layout.setBackgroundResource(R.drawable.ripple_unbounded);
                 item_layout.setOrientation(LinearLayout.VERTICAL);
                 item_layout.setClickable(true);
-                // TODO : 여기부터 진행(item_layout . Event)
-                item_layout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //[layout 버튼 이벤트]
-                        // 1. Viewport를 [상세검색]이동.
-                        // 2. 해당 종목을 검색
-
-                        // [상세 ViewModel에서 값 변경] (나중에)
-                        // 1. 상세검색의 market_name을 변경 (사실 '코스피'밖에 없기 때문에 안해도 될지도?)
-                        // 2. viewModel .observe를 발생시겨 값이 변경 된다.
-                        //
-                        LinearLayout linearLayout = (LinearLayout)v;
-                        View child = linearLayout.getChildAt(0);
-                        if (child instanceof TextView) {
-                            TextView textView = (TextView)child;
-                            Log.d("HomeFragment", "onClick: "+textView.getText());
-                        }
-                        // [view fragment 이동]
-                        // FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        // HomeFragment homeFragment = new HomeFragment();
-                        // //main_layout에 homeFragment로 transaction 한다.
-                        // transaction.replace(R.id.main_layout, homeFragment);
-                        // //꼭 commit을 해줘야 바뀐다.
-                        // transaction.commit();
-                        Log.d("HomeFragment", "onClick: "+v.getId());
-                    }
-                });
+                item_layout.setOnClickListener(item_ClickListener);
                 JSONObject item = data.getJSONObject(i);
                 String[] temp = new String[] {
                         item.getString("market_name"),
@@ -103,10 +103,10 @@ public class HomeFragment extends Fragment {
                     TextView textView = new TextView(getActivity());
                     textView.setText(temp[j]);
                     if (j == 0) { //종목 이름
-                        textView.setTextSize(21);
+                        textView.setTextSize(21); //21pt
                         textView.setTextColor(Color.BLACK);
                     } else {
-                        textView.setTextSize(16);
+                        textView.setTextSize(16); //16pt
                     }
                     item_layout.addView(textView);
                 }

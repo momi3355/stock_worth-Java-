@@ -68,11 +68,12 @@ public class MainActivity extends AppCompatActivity {
         // menu should be considered as top level destinations.
         // navigation_name = ['home', 'market_info', 'ticker_info', 'notifications']
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_market_info, R.id.navigation_ticker_info, R.id.navigation_notifications)
+                R.id.navigation_home, R.id.navigation_market_info,
+                R.id.navigation_ticker_info, R.id.navigation_notifications)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
+        NavigationUI.setupWithNavController(navView, navController);
     }
 
     @Override

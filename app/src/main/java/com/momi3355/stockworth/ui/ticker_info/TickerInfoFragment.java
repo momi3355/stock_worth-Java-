@@ -15,11 +15,12 @@ import android.widget.TextView;
 
 import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.databinding.FragmentNotificationsBinding;
+import com.momi3355.stockworth.databinding.FragmentTickerInfoBinding;
 import com.momi3355.stockworth.ui.notifications.NotificationsViewModel;
 
 public class TickerInfoFragment extends Fragment {
 
-    private FragmentNotificationsBinding binding;
+    private FragmentTickerInfoBinding binding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -27,10 +28,10 @@ public class TickerInfoFragment extends Fragment {
         TickerInfoViewModel tickerInfoViewModel =
                 new ViewModelProvider(this).get(TickerInfoViewModel.class);
 
-        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+        binding = FragmentTickerInfoBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textNotifications;
+        final TextView textView = binding.textTickerInfo;
         tickerInfoViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }

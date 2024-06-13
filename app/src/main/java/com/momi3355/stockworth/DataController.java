@@ -123,7 +123,9 @@ public class DataController {
         Log.d("DataController", "time: "+updateTime+" - "+previousOpen);
         if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
             int diff = Integer.parseInt(updateTime) - Integer.parseInt(previousOpen);
-            if (diff == 1 && LocalTime.now().getHour() < 9) return; //이른 아침
+            LocalTime now = LocalTime.now();
+            if (diff == 1 && now.getHour() < 9) return; //이른 아침
+            else if (diff == 0 && now.getHour() > 18) return; //종장 후
             FileInputStream input = newFile(dataType);
             data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
             input.close();

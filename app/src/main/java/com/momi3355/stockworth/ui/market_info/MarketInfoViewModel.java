@@ -6,14 +6,17 @@ import androidx.lifecycle.ViewModel;
 
 public class MarketInfoViewModel extends ViewModel {
 
-    private final MutableLiveData<String> mText;
+    private final MutableLiveData<String> marketName = new MutableLiveData<>();
 
     public MarketInfoViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is notifications fragment");
+
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public void setMarketName(String name) {
+        marketName.setValue(name);
+    }
+
+    public LiveData<String> getMarketName() {
+        return marketName;
     }
 }

@@ -20,6 +20,7 @@ public class LoadingActivity extends AppCompatActivity {
 
             Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
             startActivity(intent);
+            finish(); //액티비티 종료
         } catch (IOException | JSONException e) {
             Toast.makeText(LoadingActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
