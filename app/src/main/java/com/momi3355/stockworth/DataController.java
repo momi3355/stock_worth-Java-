@@ -98,6 +98,7 @@ public class DataController {
                 // 1. JSON에서 data겍체를 찾을 수 없는 경우.
                 // 2. 위에 있는 if (array_data.length() == 0) 에서 정보을 찾을 수 없는 경우.
                 // 3. JSON파일이 손상된 경우.
+                // TODO : 이곳에 오는 경의를 정확하게 알 필요가 있다.
                 Log.w("DataController", "load: "+e.getMessage());
                 fileInput.close(); // 파일 닫고, 다시 열기
                 fileInput = newFile(dataType);
@@ -119,6 +120,7 @@ public class DataController {
     public void update(JSONObject json, DataType dataType) throws JSONException, IOException {
         String updateTime = json.getString("update_time");
         String previousOpen = getPreviousOpen();
+        //숫자로 되어있는 String
 
         Log.d("DataController", "time: "+updateTime+" - "+previousOpen);
         if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
@@ -133,6 +135,9 @@ public class DataController {
     }
 
     public void update() throws IOException, JSONException {
+        LocalTime now = LocalTime.now();
+        //장시간이 아닐때에는 업데이트를 진행되지 않는다.
+        if (now.getHour() < 9 || now.getHour() > 18) return;
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
             FileInputStream input = newFile(dataType);

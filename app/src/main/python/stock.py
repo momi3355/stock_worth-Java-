@@ -42,7 +42,6 @@ def update_marketInfo(market, ticker_list):
         stock_list = list()
         market_dict = dict()
         market_dict['market_name'] = market_name
-        market_dict['isRunMarket'] = isRunMarket('XKRX')
 
         for i, ticker in enumerate(ticker_list):
             stock_list.append(update_tickerInfo(ticker, updateTime))
@@ -107,7 +106,7 @@ def getPreviousOpen(countryCode):
 def getVersion():
     return pykrx.__version__
 
-
+# pykrx를 작동하는지 확인하는 메소드
 def temp():
     return str(stock.get_index_price_change('20240508', '20240508', 'KOSPI').iloc[0]['종가'])
 

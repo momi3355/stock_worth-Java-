@@ -11,17 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 public class HomeViewModel extends ViewModel {
-    private MutableLiveData<JSONArray> market_data = new MutableLiveData<>();
 
     public HomeViewModel() {
 
-    }
-
-    public void setMarket_data(JSONArray jsonArray) {
-        market_data.postValue(jsonArray);
-    }
-
-    public LiveData<JSONArray> getMarket_data() {
-        return market_data;
     }
 }

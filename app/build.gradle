@@ -9,6 +9,10 @@ android {
     namespace 'com.momi3355.stockworth'
     compileSdk 34
 
+    viewBinding {
+        enabled = true
+    }
+
     flavorDimensions "pyVersion"
     productFlavors {
         create("py310") { dimension = "pyVersion" }

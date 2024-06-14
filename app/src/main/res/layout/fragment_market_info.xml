@@ -18,10 +18,14 @@
             <TextView
                 android:id="@+id/market_name"
                 android:layout_width="match_parent"
-                android:layout_height="84dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
                 android:text="TextView"
-                android:textSize="24sp"
-                android:gravity="center" />
+                android:textSize="24sp" />
+
+            <androidx.appcompat.widget.SearchView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 

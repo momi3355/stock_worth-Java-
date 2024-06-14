@@ -2,6 +2,7 @@ package com.momi3355.stockworth.ui.home;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.momi3355.stockworth.AppData;
 import com.momi3355.stockworth.DataType;
 import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.databinding.FragmentHomeBinding;
+import com.momi3355.stockworth.ui.market_info.MarketInfoFragment;
 import com.momi3355.stockworth.ui.market_info.MarketInfoViewModel;
 
 import org.json.JSONArray;
@@ -38,7 +40,7 @@ public class HomeFragment extends Fragment {
             // 1. Viewport를 [상세검색]이동.
             // 2. 해당 종목을 검색
 
-            TextView textView = (TextView) ((LinearLayout) view).getChildAt(0);
+            TextView textView = (TextView) ((LinearLayout) view).getChildAt(0); //마켓 이름.
             if (textView != null) {
                 String text = textView.getText().toString();
                 MarketInfoViewModel marketInfoVM = new ViewModelProvider(requireActivity()).get(MarketInfoViewModel.class);
@@ -48,7 +50,6 @@ public class HomeFragment extends Fragment {
             NavOptions navOptions = new NavOptions.Builder()
                     .setPopUpTo(R.id.navigation_home, true) // 이전 목적지부터 시작하여 백스택에서 제거
                     .build();
-
             NavController navController = Navigation.findNavController(view);
             navController.navigate(R.id.navigation_market_info, null, navOptions);
         }
@@ -65,18 +66,17 @@ public class HomeFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         JSONObject[] appData = AppData.getInstance().stockData;
-        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        //HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        //homeViewModel.getMarket_data().observe(getViewLifecycleOwner(), marketdata_observer);
+        
+        TableLayout market_tableLayout = binding.allMarketTableLayout;
 
-        TableLayout market_tableLayout = root.findViewById(R.id.allMarket_tableLayout);
         try {
             JSONArray data = appData[DataType.market_data.getIndex()].getJSONArray("data");
-            homeViewModel.getMarket_data().observe(getViewLifecycleOwner(), marketdata_observer);
-            homeViewModel.setMarket_data(data);
-            /* [지수 총합] */
-            // TODO : 밑에 있는 데이터를 'marketdata_observer'쪽으로 옴겨야 할수도 있다.
+
             TableRow tableRow = new TableRow(getActivity());
             int c = 0; //지수 총합이 Row가 2기때문에(1 ~ 2지정)
             for (int i = 0; i < data.length(); i++) {
@@ -119,6 +119,7 @@ public class HomeFragment extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
         return root;
     }
 

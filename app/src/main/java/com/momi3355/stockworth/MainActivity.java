@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DataService.LocalBinder dataBinder = (DataService.LocalBinder)service;
-            dataService = dataBinder.getService();
+            dataService = dataBinder.getService(); //'dateService'가 사용되지 않으면 삭제 요함.
             isService = true;
             // 백그라운드 스레드에서 backgroundRunnable 실행
             backgroundHandler.post(backgroundRunnable);

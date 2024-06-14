@@ -21,10 +21,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class DataService extends Service implements Serializable {
+public class DataService extends Service {
     private static final int NOTIFICATION_ID = 1; //포그라운드 알람_ID
     private static final String CHANNEL_ID = "실시간 주식 정보";
     /** 데이터를 불러오고 저장하는 멤버변수
+     * <p>데이터를 불러오는거는 'LoadingActivity'에서 진행된다.</p>
+     * <p>데이터가 업데이트는 이 곳 'onStartCommand'에서 진행된다.</p>
+     * @see LoadingActivity
      * @see AppData */
     public final DataController controller = new DataController(this);
     /** 주식의 데이터를 관리하는 멤버변수
@@ -32,7 +35,7 @@ public class DataService extends Service implements Serializable {
     private final LocalBinder binder = new LocalBinder();
 
     private NotificationManager notificationManager; //알람 메니져
-    private ScheduledExecutorService scheduler;
+    private ScheduledExecutorService scheduler; //데이터가 업데이트가 진행되는 스케줄러
 
     // 바인터 필요없는거 같기도 하고(AppData로 불러오면 되기 때문에/)
     class LocalBinder extends Binder {
@@ -48,7 +51,7 @@ public class DataService extends Service implements Serializable {
         createNotificationChannel(CHANNEL_ID, NotificationManager.IMPORTANCE_LOW, //체널, 우선순위
                 getString(R.string.channel_name), getString(R.string.channel_description)); //이름, 설명부여
         NotificationCompat.Builder stockBuilder = getStockNotification("주식정보 로딩 중....");
-        /* TODO : 팝업창 띄어서 허용을 해야한다. */
+        // TODO : 팝업창 띄어서 허용을 해야한다.
 
         // Foreground Service로 실행
         startForeground(NOTIFICATION_ID, stockBuilder.build());
@@ -113,9 +116,9 @@ public class DataService extends Service implements Serializable {
     private NotificationCompat.Builder getStockNotification(String text) {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp) //아이콘
-                .setContentTitle("Worth") //제목
-                .setContentText(text) //내용
-                .setOngoing(true); //사용자가 끄지못하도록하는것
+                .setContentTitle("Worth") // 제목
+                .setContentText(text)    // 내용
+                .setOngoing(true);      // 사용자가 끄지못하도록하는것
     }
 
     @Override
