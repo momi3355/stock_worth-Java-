@@ -1,13 +1,11 @@
 package com.momi3355.stockworth.ui.market_info;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.momi3355.stockworth.AppData;
-import com.momi3355.stockworth.DataType;
+import com.momi3355.stockworth.data.AppData;
+import com.momi3355.stockworth.data.DataType;
 
 import org.json.JSONArray;
 import org.json.JSONException;

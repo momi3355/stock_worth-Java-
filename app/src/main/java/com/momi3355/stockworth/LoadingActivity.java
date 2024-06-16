@@ -4,8 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
+
+import com.momi3355.stockworth.data.DataController;
 
 import org.json.JSONException;
 
@@ -14,11 +15,20 @@ import java.io.IOException;
 public class LoadingActivity extends AppCompatActivity {
     private final DataController controller = new DataController(this);
 
+    /**
+     * 쓰레드로하는 이유는 <b>onCreate()</b>에서 하면<br>
+     * <b>Activity</b>를 생성하지도 않고 오래걸려서,<br>
+     * 프로그램의 <b>'응답없음'</b>이 되기 때문에<br>
+     * 일을 <b>Thread</b>에 넣어서 따로 처리해준다.<br>
+     *
+     * <p>※ 작업시간이 긴 작업은 <b>Activity</b>에서 하는 것은 권장되지 않는다.</p>
+     */
     private final Runnable loadingProcess = () -> {
         try {
             controller.load();
 
             Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
+            //loading -> main으로 이동하는 intent
             startActivity(intent);
             finish(); //액티비티 종료
         } catch (IOException | JSONException e) {

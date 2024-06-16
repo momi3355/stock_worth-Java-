@@ -1,6 +1,9 @@
-package com.momi3355.stockworth.ReclerView;
+package com.momi3355.stockworth.recyclerView;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,9 +11,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.momi3355.stockworth.R;
+import com.momi3355.stockworth.TickerInfoActivity;
+import com.momi3355.stockworth.ui.market_info.MarketInfoFragment;
 
 import java.util.List;
 import java.util.Random;
@@ -19,9 +25,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private final int VIEW_TYPE_ITEM = 0;
     private final int VIEW_TYPE_LOADING = 1;
 
-    public List<TickerInfo> mItemList;
-    public RecyclerViewAdapter(List<TickerInfo> itemList) {
-        mItemList = itemList;
+    private final List<TickerInfo> itemList;
+
+    private final boolean isDarkMode;
+
+    private int bg_toggle = 0;
+
+    public RecyclerViewAdapter(List<TickerInfo> list, boolean isDarkMode) {
+        itemList = list;
+        this.isDarkMode = isDarkMode;
     }
 
     @NonNull
@@ -48,16 +60,19 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        return mItemList == null ? 0 : mItemList.size();
+        return itemList == null ? 0 : itemList.size();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mItemList.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+        return itemList.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
+        Context context; //tickerInfoActivity로 이동하기 위함
+        CardView itemRow; //이거는 배경을 바꾸기 위함
+
         TextView itemIcon;
         TextView itemName;
         TextView itemPrice;
@@ -65,7 +80,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
+            context = itemView.getContext();
 
+            itemRow = itemView.findViewById(R.id.item_row);
             itemIcon = itemView.findViewById(R.id.item_icon);
             itemName = itemView.findViewById(R.id.item_name);
             itemPrice = itemView.findViewById(R.id.item_price);
@@ -88,30 +105,52 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     private void populateItemRows(ItemViewHolder viewHolder, int position) {
-        TickerInfo item = mItemList.get(position);
+        TickerInfo item = itemList.get(position);
         String price_str = item.item_price + "원";
         String rate_str = item.item_rate + "%";
+        Context context = viewHolder.context;
         if (item.item_rate >= 0) {
             if (!(item.item_rate == 0))
                 rate_str = "+" + rate_str;
-            viewHolder.itemRate.setTextColor(Color.RED);
+            viewHolder.itemRate.setTextColor(context.getColor(R.color.red));
         } else {
-            viewHolder.itemRate.setTextColor(Color.BLUE);
+            viewHolder.itemRate.setTextColor(context.getColor(R.color.blue));
         }
 
-        viewHolder.itemIcon.setText(item.item_icon);
-        changeIconColor(viewHolder.itemIcon);
+        TextView itemIcon = viewHolder.itemIcon;
+        GradientDrawable magnitudeCircle = (GradientDrawable)itemIcon.getBackground();
+        magnitudeCircle.setColor(getRandomColor());
+
+        itemIcon.setText(item.item_icon);
         viewHolder.itemName.setText(item.item_name);
         viewHolder.itemPrice.setText(price_str);
         viewHolder.itemRate.setText(rate_str);
+
+        if (isDarkMode) {
+            if (bg_toggle == 0) {
+                viewHolder.itemRow.setBackgroundColor(Color.parseColor("#00071D")); //penn_blue
+            } else { //짝수
+                //홀수 보다 8감소
+                viewHolder.itemRow.setBackgroundColor(Color.parseColor("#000715"));
+            }
+            bg_toggle = bg_toggle == 0 ? 1 : 0; //토글 스위치
+        }
+
+        viewHolder.itemRow.setClickable(true);
+        viewHolder.itemRow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, TickerInfoActivity.class);
+                intent.putExtra("ticker_name", viewHolder.itemName.getText());
+                //Activity를 변경하기전에 메게변수를 전달한다.
+                context.startActivity(intent);
+            }
+        });
     }
 
-    private void changeIconColor(TextView view) {
+    private static int getRandomColor() {
         // 랜덤 색상 생성
         Random rnd = new Random();
-        int color = Color.rgb(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-
-        // TextView 배경색 변경
-        view.setBackgroundColor(color);
+        return Color.rgb(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
     }
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="oxford_blue">#00072D</color>
+    <color name="penn_blue">#001C55</color>
+    <color name="royal_blue">#0A2472</color>
+
+    <color name="navy">#000080</color>
+
+    <color name="lightBlue_900">#01579B</color>
+    <color name="lightBlue_700">#0288D1</color>
+    <color name="lightBlue_400">#29B6F6</color>
+    <color name="lightBlue_100">#B3E5FC</color>
+
+    <color name="red">#CE2029</color>
+    <color name="blue">#3232FF</color>
+
+    <color name="black">#212121</color>
+    <color name="gray">#282828</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

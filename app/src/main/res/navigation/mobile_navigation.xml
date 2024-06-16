@@ -18,14 +18,14 @@
         tools:layout="@layout/fragment_market_info" />
 
     <fragment
-        android:id="@+id/navigation_ticker_info"
-        android:name="com.momi3355.stockworth.ui.ticker_info.TickerInfoFragment"
-        android:label="@string/title_ticker_info"
-        tools:layout="@layout/fragment_ticker_info" />
-
-    <fragment
         android:id="@+id/navigation_notifications"
         android:name="com.momi3355.stockworth.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/navigation_setting"
+        android:name="com.momi3355.stockworth.ui.setting.SettingsFragment"
+        android:label="@string/title_setting"
+        tools:layout="@layout/fragment_settings" />
 </navigation>

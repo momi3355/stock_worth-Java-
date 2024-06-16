@@ -1,4 +1,4 @@
-package com.momi3355.stockworth;
+package com.momi3355.stockworth.data;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,10 +11,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
+import com.momi3355.stockworth.LoadingActivity;
+import com.momi3355.stockworth.R;
+
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.concurrent.Executors;
@@ -37,9 +39,10 @@ public class DataService extends Service {
     private NotificationManager notificationManager; //알람 메니져
     private ScheduledExecutorService scheduler; //데이터가 업데이트가 진행되는 스케줄러
 
+
     // 바인터 필요없는거 같기도 하고(AppData로 불러오면 되기 때문에/)
-    class LocalBinder extends Binder {
-        DataService getService() {
+    public class LocalBinder extends Binder {
+        public DataService getService() {
             return DataService.this;
         }
     }
@@ -85,13 +88,14 @@ public class DataService extends Service {
         //     . 장시작, 장종료시간 알림.
         //     . 즐겨찾는 종목 변동%가 설정만큼 올라가거나, 내려갔을 경우 알림.
         scheduler.scheduleAtFixedRate(() -> {
+            // TODO : 현재 업데이트 비활성화
             //포그라운드.
-            try {
-                controller.update();
-                // TODO : 성공하면 알람내용 - 코스피의 주가 수정, 날짜-시간 출력. (우선순위 낮음)
-            } catch (IOException | JSONException e) {
-                Log.e("DataService", "onStartCommand: "+e.getMessage());
-            }
+//            try {
+//                controller.update();
+//                // TODO : 성공하면 알람내용 - 코스피의 주가 수정, 날짜-시간 출력. (우선순위 낮음)
+//            } catch (IOException | JSONException e) {
+//                Log.e("DataService", "onStartCommand: "+e.getMessage());
+//            }
             //TODO : 메시지도 변경 요함
             //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
         }, initialDelay.toMillis(), 20, TimeUnit.MINUTES); //이건 시간의 20분.

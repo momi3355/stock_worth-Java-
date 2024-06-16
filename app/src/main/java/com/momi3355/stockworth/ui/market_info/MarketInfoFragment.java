@@ -2,6 +2,8 @@ package com.momi3355.stockworth.ui.market_info;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,10 +18,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.momi3355.stockworth.AppData;
-import com.momi3355.stockworth.DataType;
-import com.momi3355.stockworth.ReclerView.RecyclerViewAdapter;
-import com.momi3355.stockworth.ReclerView.TickerInfo;
+import com.momi3355.stockworth.MainActivity;
+import com.momi3355.stockworth.R;
+import com.momi3355.stockworth.data.AppData;
+import com.momi3355.stockworth.data.DataType;
+import com.momi3355.stockworth.recyclerView.RecyclerViewAdapter;
+import com.momi3355.stockworth.recyclerView.TickerInfo;
 import com.momi3355.stockworth.databinding.FragmentMarketInfoBinding;
 
 import org.json.JSONArray;
@@ -71,8 +75,11 @@ public class MarketInfoFragment extends Fragment {
         // [recyclerView 설정]
         recyclerView = binding.marketInfoList;
 
+        boolean isDarkMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+
         // [recyclerViewAdapter 초기화]
-        recyclerViewAdapter = new RecyclerViewAdapter(rowsArrayList);
+        recyclerViewAdapter = new RecyclerViewAdapter(rowsArrayList, isDarkMode);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(recyclerViewAdapter);
 
@@ -106,6 +113,9 @@ public class MarketInfoFragment extends Fragment {
         binding = null;
     }
 
+    /**
+     * 현제 스크롤을 최대치를 도달했을 때 실행하는 메소드
+     */
     private void loadMore() {
         rowsArrayList.add(null);
 
@@ -118,7 +128,7 @@ public class MarketInfoFragment extends Fragment {
                 recyclerViewAdapter.notifyItemRemoved(scrollPosition);
                 int currentSize = scrollPosition;
                 int nextLimit = currentSize + NEXT_LIMIT;
-
+                //스크롤 맥스치를 변경한 후에 데이터 투입
                 while (currentSize - 1 < nextLimit) {
                     try {
                         TickerInfo tickerInfo = getTickerInfo(ticker_data, currentSize - 1);
@@ -130,10 +140,11 @@ public class MarketInfoFragment extends Fragment {
                 }
                 isLoading = false;
             }
-        }, 2000);
+        }, 2000); // 2초
     }
 
-    private TickerInfo getTickerInfo(JSONArray data, int i) throws JSONException {
+    @NonNull
+    private static TickerInfo getTickerInfo(JSONArray data, int i) throws JSONException {
         String name = data.getJSONObject(i).getString("name");
         double price = data.getJSONObject(i).getDouble("price");
         double rate = data.getJSONObject(i).getDouble("rate");

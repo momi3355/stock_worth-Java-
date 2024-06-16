@@ -1,5 +1,6 @@
 package com.momi3355.stockworth;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,13 +20,13 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.momi3355.stockworth.data.DataService;
 import com.momi3355.stockworth.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private DataService dataService;
     private HandlerThread handlerThread;
-    private Handler mainHandler;
     private Handler backgroundHandler;
 
     private boolean isService;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DataService.LocalBinder dataBinder = (DataService.LocalBinder)service;
-            dataService = dataBinder.getService(); //'dateService'가 사용되지 않으면 삭제 요함.
+            dataService = dataBinder.getService();
             isService = true;
             // 백그라운드 스레드에서 backgroundRunnable 실행
             backgroundHandler.post(backgroundRunnable);
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     Runnable backgroundRunnable = () -> {
-        // 백그라운드 할거 없으면 삭제 요함.
+        // 백그라운드 처리 루틴
     };
 
     @Override
@@ -66,10 +67,10 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        // navigation_name = ['home', 'market_info', 'ticker_info', 'notifications']
+        // navigation_name = ['home', 'market_info', 'notifications', 'setting']
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_home, R.id.navigation_market_info,
-                R.id.navigation_ticker_info, R.id.navigation_notifications)
+                R.id.navigation_notifications, R.id.navigation_setting)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
@@ -79,11 +80,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(getApplicationContext(), DataService.class);
         try {
-            startService(intent);
-            bindService(intent, conn, Context.BIND_AUTO_CREATE);
-            Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
+            if (dataService == null) { //서비스가 바운딩되지 않았을 때
+                Intent intent = new Intent(getApplicationContext(), DataService.class);
+                Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
+                startService(intent);
+                bindService(intent, conn, Context.BIND_AUTO_CREATE);
+            }
         } catch (Exception e) {
             Log.e("MainActivity", "onCreate: "+e.getMessage());
         }

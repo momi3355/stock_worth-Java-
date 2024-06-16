@@ -1,4 +1,4 @@
-package com.momi3355.stockworth;
+package com.momi3355.stockworth.data;
 
 import android.content.Context;
 import android.util.Log;
@@ -91,27 +91,20 @@ public class DataController {
             try {
                 data.stockData[i] = new JSONObject(DataController.getJsonString(fileInput));
                 JSONArray array_data = data.stockData[dataType.getIndex()].getJSONArray("data");
+                Log.d("DataController", "load: "+array_data.length());
                 if (array_data.length() == 0) //정보가 없을 경우
                     throw new FileNotFoundException(dataType.getFileName());
             } catch (NullPointerException | JSONException e) {
-                /* 여기오는 경우 */
+                /* [여기오는 경우] */
                 // 1. JSON에서 data겍체를 찾을 수 없는 경우.
                 // 2. 위에 있는 if (array_data.length() == 0) 에서 정보을 찾을 수 없는 경우.
                 // 3. JSON파일이 손상된 경우.
-                // TODO : 이곳에 오는 경의를 정확하게 알 필요가 있다.
                 Log.w("DataController", "load: "+e.getMessage());
                 fileInput.close(); // 파일 닫고, 다시 열기
                 fileInput = newFile(dataType);
             } finally {
-                update(data.stockData[i], dataType); //일단 로딩한다음 업데이트 확인.
-//                Log.d("DataController", "update_time: "+data.stockData[i].getString("update_time"));
-//                JSONArray array_data = data.stockData[i].getJSONArray("data");
-//                for (int j = 0; j < array_data.length(); j++) {
-//                    JSONObject item = array_data.getJSONObject(j);
-//                    Log.d("DataController", "data("+j+")_market_name: "+item.getString("market_name"));
-//                    Log.d("DataController", "data("+j+")_rate: "+item.getDouble("rate"));
-//                    Log.d("DataController", "data("+j+")_price: "+item.getDouble("price"));
-//                }
+                // TODO : 현재 업데이트 비활성화
+                //update(data.stockData[i], dataType); //일단 로딩한다음 업데이트 확인.
                 fileInput.close();
             }
         }
@@ -123,15 +116,20 @@ public class DataController {
         //숫자로 되어있는 String
 
         Log.d("DataController", "time: "+updateTime+" - "+previousOpen);
+        LocalTime now = LocalTime.now();
+        int diff = Integer.parseInt(updateTime) - Integer.parseInt(previousOpen);
         if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
-            int diff = Integer.parseInt(updateTime) - Integer.parseInt(previousOpen);
-            LocalTime now = LocalTime.now();
             if (diff == 1 && now.getHour() < 9) return; //이른 아침
-            else if (diff == 0 && now.getHour() > 18) return; //종장 후
-            FileInputStream input = newFile(dataType);
-            data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
-            input.close();
+        } else { //당일, 금일
+            if (diff == 0 && now.getHour() > 18) return; //종장 후
         }
+        // TODO : updata_time을 날자-시간으로 표시하는 것을 권장.
+        // 시간으로 하면,
+        // 1. 이른 아침전에 '전날' 종장 전에 업데이트가 된 파일인지 확인 하고 업데이트 한다.
+        // 2. 종장 후에 종장 전에 업데이트가 된 파일인지 확인 하고 업데이트 한다.
+        FileInputStream input = newFile(dataType);
+        data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
+        input.close();
     }
 
     public void update() throws IOException, JSONException {

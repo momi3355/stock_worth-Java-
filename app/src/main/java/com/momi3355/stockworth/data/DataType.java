@@ -1,4 +1,4 @@
-package com.momi3355.stockworth;
+package com.momi3355.stockworth.data;
 
 public enum DataType {
     stock_data("stock_data.json", 0),

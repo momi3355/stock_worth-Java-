@@ -1,4 +1,4 @@
-package com.momi3355.stockworth.ReclerView;
+package com.momi3355.stockworth.recyclerView;
 
 /**
  * RecyclerView에서 사용되는 데이터를 저장하는 클래스

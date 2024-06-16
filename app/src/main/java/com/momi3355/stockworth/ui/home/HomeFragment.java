@@ -1,8 +1,8 @@
 package com.momi3355.stockworth.ui.home;
 
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +19,10 @@ import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
-import com.momi3355.stockworth.AppData;
-import com.momi3355.stockworth.DataType;
+import com.momi3355.stockworth.data.AppData;
+import com.momi3355.stockworth.data.DataType;
 import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.databinding.FragmentHomeBinding;
-import com.momi3355.stockworth.ui.market_info.MarketInfoFragment;
 import com.momi3355.stockworth.ui.market_info.MarketInfoViewModel;
 
 import org.json.JSONArray;
@@ -74,6 +73,13 @@ public class HomeFragment extends Fragment {
         
         TableLayout market_tableLayout = binding.allMarketTableLayout;
 
+        boolean isDarkMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        if (isDarkMode) {
+            View line = binding.line1;
+            line.setBackgroundColor(Color.GRAY);
+        }
+
         try {
             JSONArray data = appData[DataType.market_data.getIndex()].getJSONArray("data");
 
@@ -104,7 +110,9 @@ public class HomeFragment extends Fragment {
                     textView.setText(temp[j]);
                     if (j == 0) { //종목 이름
                         textView.setTextSize(21); //21pt
-                        textView.setTextColor(Color.BLACK);
+                        if (isDarkMode) {
+                            textView.setTextColor(Color.WHITE);
+                        } else textView.setTextColor(Color.BLACK);
                     } else {
                         textView.setTextSize(16); //16pt
                     }
