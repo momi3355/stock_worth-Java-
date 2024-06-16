@@ -1,9 +1,12 @@
 package com.momi3355.stockworth;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.momi3355.stockworth.data.DataController;
@@ -41,6 +44,14 @@ public class LoadingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
+
+        boolean isDarkMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        if (isDarkMode) {
+            ProgressBar progressBar = findViewById(R.id.progressBar);
+            //로고 변경
+            progressBar.setIndeterminateDrawable(AppCompatResources.getDrawable(this, R.drawable.logo_white));
+        }
 
         Thread loading = new Thread(loadingProcess);
         loading.start();

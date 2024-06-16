@@ -19,6 +19,7 @@ import com.momi3355.stockworth.TickerInfoActivity;
 import com.momi3355.stockworth.ui.market_info.MarketInfoFragment;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -106,7 +107,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private void populateItemRows(ItemViewHolder viewHolder, int position) {
         TickerInfo item = itemList.get(position);
-        String price_str = item.item_price + "원";
+
+        String price_str = String.format(Locale.KOREA, "%,d원", item.item_price);
         String rate_str = item.item_rate + "%";
         Context context = viewHolder.context;
         if (item.item_rate >= 0) {

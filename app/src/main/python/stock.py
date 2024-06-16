@@ -103,8 +103,26 @@ def getPreviousOpen(countryCode):
     return cals.previous_open(now).strftime('%Y%m%d')  # 이전 개장일
 
 
+def getPreviousOpen_count(countryCode, count):
+    open_list = []
+    now = datetime.datetime.now()
+    cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
+    if now.time().hour < 9:  # 장시간 전
+        now -= datetime.timedelta(days=1)
+    open_list.append(cals.previous_open(now).strftime('%Y%m%d'))  # 이전 개장일
+    for i in range(count):
+        now = cals.previous_open(now)
+        open_list.append(cals.previous_open(now).strftime('%Y%m%d'))  # 이전 개장일
+    return open_list
+
+
+def getTickerInfo(date1, date2, ticker_id):
+    return stock.get_market_ohlcv(date1, date2, ticker_id, adjusted=False)
+
+
 def getVersion():
     return pykrx.__version__
+
 
 # pykrx를 작동하는지 확인하는 메소드
 def temp():
