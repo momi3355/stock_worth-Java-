@@ -121,6 +121,7 @@ public class DataController {
         if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
             if (diff == 1 && now.getHour() < 9) return; //이른 아침
         } else { //당일, 금일
+            if (diff == 0 && now.getHour() < 9) return; //이른 아침
             if (diff == 0 && now.getHour() > 18) return; //종장 후
         }
         // TODO : updata_time을 날자-시간으로 표시하는 것을 권장.
