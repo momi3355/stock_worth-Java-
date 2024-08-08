@@ -126,13 +126,28 @@ def getVersion():
 
 
 if __name__ == "__main__":
-    if not isRunMarket('XKRX'):
-        exit(300)
+    if not isRunMarket('XKRX'):  # 장일이 아님
+        exit(200)
+
     now = datetime.datetime.now()
-    date = now.strftime('%Y%m%d')
+    if now.time().hour < 9 or now.time().hour > 18:  # 장시간이 아님
+        file_name = os.getcwd() + '/python/stock/stock.log'
+        if os.path.isfile(file_name):  # 로그 파일을 찾는다.
+            fp = open(file_name, 'r')
+            file_log = fp.readlines()[-1]
+            fp.close()
+
+            update = file_log[file_log.find('[')+1:file_log.find(']')].split(' ')[0]
+            if now.time().hour < 9:  # 장시간 전
+                now -= datetime.timedelta(days=1)
+            # print(update + ', ' + now.strftime('%Y%m%d') + ', ' + str(now.strftime('%Y%m%d') == update))
+            if now.strftime('%Y%m%d') == update:  # 이전 날자와 비교
+                exit(300)
+
+    date = getPreviousOpen('XKRX')
     data = dict()
     # ticker_data.json 이 데이터는 한달에 한 번 갱신
-    data['ticker_data.json'] = getTickers(date)
+    data['ticker_data.json'] = getTickers(date)  # 이거 없어도 됨.
     data['market_data.json'] = getMarket(date)
     time.sleep(random.uniform(5, 10))  # 5 ~ 10s
     data['stock_data.json'] = getMarketInfo(date)
@@ -146,10 +161,11 @@ if __name__ == "__main__":
             for item in data.keys():
                 file_name = dire + '/' + item
                 if not os.path.isfile(file_name):
-                    os.system("sudo touch {file_url}".format(file_url=file_name))  # 파일 생성
-                os.system("sudo chmod 777 {file_url}".format(file_url=file_name))  # 권한 변경
+                    os.system('touch {file_url}'.format(file_url=file_name))  # 파일 생성
+                # os.system('sudo chmod 777 {file_url}'.format(file_url=file_name))  # 권한 변경
                 fp = open(file_name, 'w')
                 fp.write(data[item])
                 fp.close()
-                os.system("sudo chmod 744 {file_url}".format(file_url=file_name))
-    print('[' + date + '] 모든 주식정보가 저장되었습니다.')
+                # os.system("sudo chmod 744 {file_url}".format(file_url=file_name))
+    update_time = now.strftime('%Y%m%d %H:%M:%S')
+    print('[' + update_time + '] 모든 주식정보가 저장되었습니다.')

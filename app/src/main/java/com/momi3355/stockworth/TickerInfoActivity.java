@@ -119,6 +119,8 @@ public class TickerInfoActivity extends AppCompatActivity {
                 for (int j = 0; j < market.length(); j++) {
                     JSONObject ticker = market.getJSONObject(j);
                     if (tickerName.equals(ticker.getString("name"))) {
+                        //TODO : 이 데이터도 py으로 새로운 값을 가지고 오는게 좋은거 같다.
+                        // 이 데이터는 30~40초 간격으로 업데이트된다.
                         tickerId = ticker.getString("id"); //id를 검색
                         ticker_object = ticker;
                         break;

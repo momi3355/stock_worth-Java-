@@ -117,6 +117,7 @@ def getPreviousOpen_count(countryCode, count):
 
 
 def getTickerInfo(date1, date2, ticker_id):
+
     return stock.get_market_ohlcv(date1, date2, ticker_id, adjusted=False)
 
 
@@ -144,9 +145,11 @@ if __name__ == "__main__":
     # print(temp_df.to_json())
     # getMarketInfo(data)
 
-    print(getMarket(date))
-    if not isRunMarket('XKRX'):
-        print(getPreviousOpen('XKRX'))
-    print(update_market(['KOSPI', 'KOSDAQ'], date))
+    # print(getMarket(date))
+    # if not isRunMarket('XKRX'):
+    #     print(getPreviousOpen('XKRX'))
+    # print(update_market(['KOSPI', 'KOSDAQ'], date))
     # print(getMarket(now.strftime('%Y%m') + '08'))
-    # print(temp())
+    print(temp())
+
+    print(getTickerInfo("20240731", "20240801", "001040"))

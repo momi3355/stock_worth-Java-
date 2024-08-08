@@ -2,8 +2,8 @@ package com.momi3355.stockworth.data;
 
 public enum DataType {
     stock_data("stock_data.json", 0),
-    ticker_data("ticker_data.json", 1),
-    market_data("market_data.json", 2);
+    //ticker_data("ticker_data.json", 1),
+    market_data("market_data.json", 1);
 
     private final String fileName;
     private final int index;

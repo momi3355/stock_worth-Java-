@@ -6,14 +6,24 @@ import androidx.appcompat.content.res.AppCompatResources;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.momi3355.stockworth.data.DataController;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class LoadingActivity extends AppCompatActivity {
     private final DataController controller = new DataController(this);
@@ -27,17 +37,13 @@ public class LoadingActivity extends AppCompatActivity {
      * <p>※ 작업시간이 긴 작업은 <b>Activity</b>에서 하는 것은 권장되지 않는다.</p>
      */
     private final Runnable loadingProcess = () -> {
-        try {
-            controller.load();
+        //TODO : load 에서 서버 url로 교체 요함.
+        controller.load();
 
-            Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
-            //loading -> main으로 이동하는 intent
-            startActivity(intent);
-            finish(); //액티비티 종료
-        } catch (IOException | JSONException e) {
-            Toast.makeText(LoadingActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
+        Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
+        //loading -> main으로 이동하는 intent
+        startActivity(intent);
+        finish(); //액티비티 종료
     };
 
     @Override

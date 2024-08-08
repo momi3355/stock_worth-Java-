@@ -6,23 +6,22 @@ import android.util.Log;
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.momi3355.stockworth.Server;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.HttpStatusException;
+import org.jsoup.Jsoup;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 public class DataController {
-    private final Python py;
+    private final Python py; //필요없을 수 있다.
     private final Context context;
     final AppData data;
 
@@ -41,117 +40,74 @@ public class DataController {
         return stockObject.callAttr("getPreviousOpen", "XKRX").toString();
     }
 
-    private FileInputStream newFile(DataType dataType) throws IOException {
-        FileOutputStream output = context.openFileOutput(dataType.getFileName(), Context.MODE_PRIVATE);
-        PyObject stockObject = py.getModule("stock");
-        String now = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        /* [휴장시간확인] */
-        if (!Boolean.parseBoolean(stockObject.callAttr("isRunMarket", "XKRX").toString())) {
-            //이전 개장시간 추출;
-            now = stockObject.callAttr("getPreviousOpen", "XKRX").toString();
-        }
+    private String getServerData(DataType dataType) throws IOException {
         /* [주식 정보 추출] */
+        String url = Server.URL;
         String data_string = "";
-        switch (dataType) {
-            case stock_data:
-                data_string = stockObject.callAttr("getMarketInfo", now).toString(); break;
-            case ticker_data:
-                data_string = stockObject.callAttr("getTickers", now).toString(); break;
-            case market_data:
-                data_string = stockObject.callAttr("getMarket", now).toString(); break;
-            default:
-                Log.e("DataController", "지금 파일포맷을 알 수 없습니다. ("+dataType+")");
-        }
-        if (data_string.equals("")) {
-            //에러 표기 요함
-        }
-        /* [파일 쓰기] */
-        output.write(data_string.getBytes(StandardCharsets.UTF_8));  //파일 저장
-        output.close();
-        return context.openFileInput(dataType.getFileName());
-    }
-
-    private FileInputStream getFileInputStream(DataType dataType) throws IOException {
         try {
-            FileInputStream file = context.openFileInput(dataType.getFileName());
-            if (file.available() == 0) //isEmpty();
-                throw new FileNotFoundException(dataType.getFileName());
-            return file;
-        } catch (FileNotFoundException e) {
-            Log.e("DataController", "getFileInputStream: "+e.getMessage());
-            return newFile(dataType);
+            switch (dataType) {
+                case stock_data:
+                case market_data:
+                    data_string = Jsoup.connect(url + dataType + ".json").ignoreContentType(true).execute().body();
+                    break;
+                default:
+                    Log.e("DataController", "지금 파일포맷을 알 수 없습니다. (" + dataType + ")");
+            }
+        } catch (ConnectException e) {
+            throw new IOException("504 error (서버가 오프라인이거나 올바르지 않는 'url' 입니다.)");
         }
+        return data_string;
     }
 
-    public void load() throws IOException, JSONException {
+    public void load() {
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
-
-            FileInputStream fileInput = getFileInputStream(dataType);
             try {
-                data.stockData[i] = new JSONObject(DataController.getJsonString(fileInput));
+                String json_data = getServerData(dataType);
+                data.stockData[i] = new JSONObject(json_data);
                 JSONArray array_data = data.stockData[dataType.getIndex()].getJSONArray("data");
-                Log.d("DataController", "load: "+array_data.length());
                 if (array_data.length() == 0) //정보가 없을 경우
-                    throw new FileNotFoundException(dataType.getFileName());
-            } catch (NullPointerException | JSONException e) {
+                    throw new IOException("404 error");
+            } catch (Exception e) {
                 /* [여기오는 경우] */
-                // 1. JSON에서 data겍체를 찾을 수 없는 경우.
-                // 2. 위에 있는 if (array_data.length() == 0) 에서 정보을 찾을 수 없는 경우.
-                // 3. JSON파일이 손상된 경우.
-                Log.w("DataController", "load: "+e.getMessage());
-                fileInput.close(); // 파일 닫고, 다시 열기
-                fileInput = newFile(dataType);
-            } finally {
-                // TODO : 현재 업데이트 비활성화
-                //update(data.stockData[i], dataType); //일단 로딩한다음 업데이트 확인.
-                fileInput.close();
+                // 1. 서버가 올바르지 않는 경우
+                // 2. JSON에서 data겍체를 찾을 수 없는 경우.
+                // 3. 위에 있는 if (array_data.length() == 0) 에서 정보을 찾을 수 없는 경우.
+                // 4. JSON파일이 손상된 경우.
+
+                if (e instanceof IOException) {
+                    Log.e("DataController", "server : " + e.getMessage());
+                } else { // JSONException
+                    Log.e("DataController", "json file : error");
+                }
+
+                // TODO : 에러 표기 요함. (에러 디스플래이)
+                // 서버에러면 다음에 시도 하고 무시한다.
+                //  - Toast.makeText() 로 표기
+                // 그 외면 에러뜨고 종료한다.
             }
         }
     }
 
-    public void update(JSONObject json, DataType dataType) throws JSONException, IOException {
-        String updateTime = json.getString("update_time");
-        String previousOpen = getPreviousOpen();
-        //숫자로 되어있는 String
-
-        Log.d("DataController", "time: "+updateTime+" - "+previousOpen);
-        LocalTime now = LocalTime.now();
-        int diff = Integer.parseInt(updateTime) - Integer.parseInt(previousOpen);
-        if (!updateTime.equals(previousOpen)) { //'업데이트 시간'과 '최근 개장일'를 비교
-            if (diff == 1 && now.getHour() < 9) return; //이른 아침
-        } else { //당일, 금일
-            if (diff == 0 && now.getHour() < 9) return; //이른 아침
-            if (diff == 0 && now.getHour() > 18) return; //종장 후
-        }
-        // TODO : updata_time을 날자-시간으로 표시하는 것을 권장.
-        // 시간으로 하면,
-        // 1. 이른 아침전에 '전날' 종장 전에 업데이트가 된 파일인지 확인 하고 업데이트 한다.
-        // 2. 종장 후에 종장 전에 업데이트가 된 파일인지 확인 하고 업데이트 한다.
-        FileInputStream input = newFile(dataType);
-        data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
-        input.close();
-    }
-
-    public void update() throws IOException, JSONException {
+    public void update() {
         LocalTime now = LocalTime.now();
         //장시간이 아닐때에는 업데이트를 진행되지 않는다.
         if (now.getHour() < 9 || now.getHour() > 18) return;
-        for (int i = 0; i < DataType.getLength(); i++) {
-            DataType dataType = DataType.values()[i];
-            FileInputStream input = newFile(dataType);
-            data.stockData[dataType.getIndex()] = new JSONObject(DataController.getJsonString(input));
-            input.close();
-        }
+        load();
+//        for (int i = 0; i < DataType.getLength(); i++) {
+//            DataType dataType = DataType.values()[i];
+//            String input = getServerData(dataType);
+//            data.stockData[dataType.getIndex()] = new JSONObject(input);
+//        }
     }
 
-    private static String getJsonString(InputStream is) {
+    @Deprecated
+    public static String getJsonString(InputStream is) {
         String json = "";
         try {
             int fileSize = is.available();
             byte[] buffer = new byte[fileSize];
             is.read(buffer, 0, fileSize);
-
             json = new String(buffer, StandardCharsets.UTF_8);
         } catch (IOException e) {
             Log.e("DataController", "getJsonString: "+e.getMessage());

@@ -17,7 +17,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.StockWorth"
-        tools:targetApi="tiramisu">
+        android:usesCleartextTraffic="true"
+        tools:targetApi="tiramisu"
+        >
         <activity
             android:name=".LoadingActivity"
             android:exported="true">

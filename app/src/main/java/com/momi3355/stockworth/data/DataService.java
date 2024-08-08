@@ -70,7 +70,6 @@ public class DataService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("DataService", "onStartCommand : ");
         scheduler = Executors.newSingleThreadScheduledExecutor();
 
         LocalTime now = LocalTime.now(); //현재 시간
@@ -88,18 +87,13 @@ public class DataService extends Service {
         //     . 장시작, 장종료시간 알림.
         //     . 즐겨찾는 종목 변동%가 설정만큼 올라가거나, 내려갔을 경우 알림.
         scheduler.scheduleAtFixedRate(() -> {
-            // TODO : 현재 업데이트 비활성화
             //포그라운드.
-//            try {
-//                controller.update();
-//                // TODO : 성공하면 알람내용 - 코스피의 주가 수정, 날짜-시간 출력. (우선순위 낮음)
-//            } catch (IOException | JSONException e) {
-//                Log.e("DataService", "onStartCommand: "+e.getMessage());
-//            }
+            controller.update();
+            // TODO : 성공하면 알람내용 - 코스피의 주가 수정, 날짜-시간 출력. (우선순위 낮음)
             //TODO : 메시지도 변경 요함
             //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
-        }, initialDelay.toMillis(), 20, TimeUnit.MINUTES); //이건 시간의 20분.
-        //}, 0, 20, TimeUnit.MINUTES); //이게 20분 마다 실행
+        //}, initialDelay.toMillis(), 20, TimeUnit.MINUTES); //이건 시간의 20분.
+        }, 0, 10, TimeUnit.MINUTES); //이게 10분 마다 실행
         return START_NOT_STICKY; //서비스가 강제 종료되어도 재시작하지 않음.
     }
 
@@ -119,10 +113,10 @@ public class DataService extends Service {
     @NonNull
     private NotificationCompat.Builder getStockNotification(String text) {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp) //아이콘
-                .setContentTitle("Worth") // 제목
-                .setContentText(text)    // 내용
-                .setOngoing(true);      // 사용자가 끄지못하도록하는것
+            .setSmallIcon(R.drawable.ic_notifications_black_24dp) //아이콘
+            .setContentTitle("Worth") // 제목
+            .setContentText(text)    // 내용
+            .setOngoing(true);      // 사용자가 끄지못하도록하는것
     }
 
     @Override
