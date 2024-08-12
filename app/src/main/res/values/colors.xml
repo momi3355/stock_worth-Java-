@@ -3,7 +3,7 @@
     <color name="colorPrimary">#0288D1</color>
     <color name="colorPrimaryVariant">#01579B</color>
     <color name="colorOnPrimary">#29B6F6</color>
-    <color name="colorSecondary">#000080</color>
+    <color name="colorSecondary">#0288D1</color>
     <color name="colorOnSecondary">#0A2472</color>
     <color name="colorSurface">#FFFFFFFF</color>
     <color name="colorOnSurface">#29B6F6</color>

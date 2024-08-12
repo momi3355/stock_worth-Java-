@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     Runnable backgroundRunnable = () -> {
         // 백그라운드 처리 루틴
+
     };
 
     @Override
@@ -83,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (dataService == null) { //서비스가 바운딩되지 않았을 때
                 Intent intent = new Intent(getApplicationContext(), DataService.class);
-                Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
                 startService(intent);
                 bindService(intent, conn, Context.BIND_AUTO_CREATE);
             }
@@ -95,11 +95,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (isService) {
-            unbindService(conn);
-            isService = false;
-        }
-
     }
 
     @Override
@@ -110,6 +105,13 @@ public class MainActivity extends AppCompatActivity {
             if (handlerThread!= null) {
                 handlerThread.quitSafely();
             }
+        }
+
+        if (isService) {
+            Intent intent = new Intent(getApplicationContext(), DataService.class);
+            stopService(intent);
+            unbindService(conn);
+            isService = false;
         }
     }
 }

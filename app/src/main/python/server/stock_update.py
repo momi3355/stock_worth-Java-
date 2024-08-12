@@ -140,17 +140,17 @@ if __name__ == "__main__":
             update = file_log[file_log.find('[')+1:file_log.find(']')].split(' ')[0]
             if now.time().hour < 9:  # 장시간 전
                 now -= datetime.timedelta(days=1)
-            # print(update + ', ' + now.strftime('%Y%m%d') + ', ' + str(now.strftime('%Y%m%d') == update))
-            if now.strftime('%Y%m%d') == update:  # 이전 날자와 비교
+            # print(update + ', ' + now.strftime('%Y/%m/%d') + ', ' + str(now.strftime('%Y/%m/%d') == update))
+            if now.strftime('%Y/%m/%d') == update:  # 이전 날자와 비교
                 exit(300)
 
-    date = getPreviousOpen('XKRX')
+    update_time = now.strftime('%Y/%m/%d %H:%M:%S')  # 시간까지 표기
     data = dict()
     # ticker_data.json 이 데이터는 한달에 한 번 갱신
-    data['ticker_data.json'] = getTickers(date)  # 이거 없어도 됨.
-    data['market_data.json'] = getMarket(date)
+    # data['ticker_data.json'] = getTickers(update_time)  # 이거 없어도 됨.
+    data['market_data.json'] = getMarket(update_time)
     time.sleep(random.uniform(5, 10))  # 5 ~ 10s
-    data['stock_data.json'] = getMarketInfo(date)
+    data['stock_data.json'] = getMarketInfo(update_time)
 
     if platform.system() == 'Windows':  # 윈도우
         for item in data:
@@ -167,5 +167,6 @@ if __name__ == "__main__":
                 fp.write(data[item])
                 fp.close()
                 # os.system("sudo chmod 744 {file_url}".format(file_url=file_name))
-    update_time = now.strftime('%Y%m%d %H:%M:%S')
+
+    update_time = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')  # 업데이트 완료된 시간을 측정
     print('[' + update_time + '] 모든 주식정보가 저장되었습니다.')

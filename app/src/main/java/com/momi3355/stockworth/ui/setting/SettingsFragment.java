@@ -1,66 +1,66 @@
 package com.momi3355.stockworth.ui.setting;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import androidx.fragment.app.Fragment;
+import androidx.annotation.Nullable;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceManager;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.util.Log;
 
 import com.momi3355.stockworth.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SettingsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class SettingsFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public SettingsFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SettingsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SettingsFragment newInstance(String param1, String param2) {
-        SettingsFragment fragment = new SettingsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+public class SettingsFragment extends PreferenceFragmentCompat {
+    SharedPreferences prefs;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        setPreferencesFromResource(R.xml.settings_preference, null);
+        prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());
+        prefs.registerOnSharedPreferenceChangeListener(prefListener);
+        initSummary(getPreferenceScreen());
+    }
+
+    SharedPreferences.OnSharedPreferenceChangeListener prefListener =
+        //onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
+        (sharedPreferences, key) -> {
+            updatePrefSummary(findPreference(key));
+        };
+
+    private void initSummary(Preference p) {
+        if (p instanceof PreferenceGroup) {
+            PreferenceGroup pGrp = (PreferenceGroup) p;
+            for (int i = 0; i < pGrp.getPreferenceCount(); i++) {
+                initSummary(pGrp.getPreference(i));
+            }
+        } else {
+            updatePrefSummary(p);
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_settings, container, false);
+    private void updatePrefSummary(Preference p) {
+        if (p instanceof ListPreference) {
+            ListPreference listPref = (ListPreference) p;
+            p.setSummary(listPref.getEntry());
+        }
+        if (p instanceof EditTextPreference) {
+            EditTextPreference editTextPref = (EditTextPreference) p;
+            if (String.valueOf(p.getTitle()).toLowerCase().contains("password")) {
+                p.setSummary("******");
+            } else {
+//                if (String.valueOf(p.getSummary()).equalsIgnoreCase("null")
+//                        || String.valueOf(p.getSummary()).equals("")
+//                        || String.valueOf(p.getSummary()).equals("無")) {
+//                    p.setSummary("없음");
+//                } else
+                p.setSummary(editTextPref.getText());
+            }
+        }
+
     }
 }

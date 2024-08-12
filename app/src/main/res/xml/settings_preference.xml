@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <androidx.preference.PreferenceCategory android:title="일반 설정">
+        <androidx.preference.ListPreference
+            android:defaultValue="ko-kr"
+            android:entries="@array/language"
+            android:entryValues="@array/language_value"
+            android:key="language"
+            android:positiveButtonText="@null"
+            android:title="언어" />
+        <androidx.preference.ListPreference
+            android:defaultValue="device"
+            android:entries="@array/theme"
+            android:entryValues="@array/theme_value"
+            android:key="theme"
+            android:positiveButtonText="@null"
+            android:title="테마" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory android:title="업데이트">
+        <androidx.preference.SwitchPreference
+            android:defaultValue="true"
+            android:key="update"
+            android:summary="활성화를 하면 업데이트 시간대로 주식정보가 업데이트됩니다."
+            android:title="자동 업데이트" />
+<!--        <androidx.preference.ListPreference-->
+<!--            android:dependency="update"-->
+<!--            android:defaultValue="10"-->
+<!--            android:entries="@array/update_time"-->
+<!--            android:entryValues="@array/update_time_value"-->
+<!--            android:key="update_time"-->
+<!--            android:positiveButtonText="@null"-->
+<!--            android:title="업데이트 시간" />-->
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory android:title="알림">
+        <androidx.preference.SwitchPreference
+            android:defaultValue="true"
+            android:key="notifications"
+            android:summary="알림을 활성화 할려면 체크하세요."
+            android:title="알림 활성화" />
+        <androidx.preference.CheckBoxPreference
+            android:dependency="notifications"
+            android:defaultValue="false"
+            android:key="notifications_vibrate"
+            android:summary="진동으로 알림을 받으려면 체크하세요."
+            android:title="진동" />
+        <androidx.preference.MultiSelectListPreference
+            android:dependency="notifications"
+            android:defaultValue="@array/notifications_value"
+            android:entries="@array/notifications"
+            android:entryValues="@array/notifications_value"
+            android:key="notification_detailed"
+            android:summary="주식시장, 즐겨찾는 주가에 관한 알림"
+            android:title="알림 상세 설정" />
+        <androidx.preference.ListPreference
+            android:dependency="notifications"
+            android:defaultValue="KOSPI"
+            android:entries="@array/notifications_name_value"
+            android:entryValues="@array/notifications_name_value"
+            android:key="notifications_foreground_firstName"
+            android:positiveButtonText="@null"
+            android:title="상시 표기할 주식시장" />
+        <androidx.preference.Preference
+            android:dependency="notifications"
+            android:defaultValue="없음"
+            android:key="notifications_foreground_secondName"
+            android:summary="/* 이거는 즐겨찾기 리스트를 만들어서 선택 */"
+            android:title="상시 표기할 주가" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory android:title="정보">
+        <androidx.preference.Preference
+            android:key="reset"
+            android:summary="모든설정을 초기화합니다."
+            android:title="초기화" />
+        <androidx.preference.Preference
+            android:key="app_licence"
+            android:summary=""
+            android:title="오픈소스 라이선스" />
+        <androidx.preference.Preference
+            android:key="app_info"
+            android:summary=""
+            android:title="앱 정보" />
+    </androidx.preference.PreferenceCategory>
+</androidx.preference.PreferenceScreen>

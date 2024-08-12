@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="language">
+        <item>한국어</item>
+        <item>영어</item>
+        <item>일본어</item>
+    </string-array>
+    <string-array name="language_value">
+        <item>ko-kr</item>
+        <item>eng</item>
+        <item>japan</item>
+    </string-array>
+
+    <string-array name="theme">
+        <item>라이트</item>
+        <item>다크</item>
+        <item>기기 테마</item>
+    </string-array>
+    <string-array name="theme_value">
+        <item>light</item>
+        <item>dark</item>
+        <item>device</item>
+    </string-array>
+
+    <string-array name="update_time">
+        <item>10분</item>
+        <item>20분</item>
+        <item>30분</item>
+        <item>60분</item>
+    </string-array>
+    <string-array name="update_time_value">
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+
+    <string-array name="notifications">
+        <item>주식시장의 알림</item>
+        <item>즐겨찾기에 관한 알림</item>
+        <item>주가 상시 표기</item>
+    </string-array>
+    <string-array name="notifications_value">
+        <item>market_notification</item>
+        <item>favorites_notification</item>
+        <item>foreground_notification</item>
+    </string-array>
+
+    <string-array name="notifications_name_value">
+        <item>KOSPI</item>
+        <item>KOSDAQ</item>
+    </string-array>
+</resources>

@@ -3,6 +3,7 @@ package com.momi3355.stockworth.ui.home;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import com.momi3355.stockworth.ui.market_info.MarketInfoViewModel;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
@@ -72,6 +74,7 @@ public class HomeFragment extends Fragment {
         //homeViewModel.getMarket_data().observe(getViewLifecycleOwner(), marketdata_observer);
         
         TableLayout market_tableLayout = binding.allMarketTableLayout;
+        TextView update_view = binding.updateTime;
 
         boolean isDarkMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 == Configuration.UI_MODE_NIGHT_YES;
@@ -81,6 +84,7 @@ public class HomeFragment extends Fragment {
         }
 
         try {
+            update_view.setText(appData[DataType.stock_data.getIndex()].getString("update_time")); //업데이트 시간
             JSONArray data = appData[DataType.market_data.getIndex()].getJSONArray("data");
 
             TableRow tableRow = new TableRow(getActivity());

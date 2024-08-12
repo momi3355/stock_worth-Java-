@@ -35,6 +35,7 @@ public class DataController {
         data = AppData.getInstance();
     }
 
+    @Deprecated
     public String getPreviousOpen() {
         PyObject stockObject = py.getModule("stock");
         return stockObject.callAttr("getPreviousOpen", "XKRX").toString();

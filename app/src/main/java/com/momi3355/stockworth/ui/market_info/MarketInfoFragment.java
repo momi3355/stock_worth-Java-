@@ -2,6 +2,7 @@ package com.momi3355.stockworth.ui.market_info;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +32,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MarketInfoFragment extends Fragment {
     private static final int NEXT_LIMIT = 50;
@@ -117,6 +118,15 @@ public class MarketInfoFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Toast.makeText(requireActivity(), "검색 완료", Toast.LENGTH_SHORT).show();
+                if (getActivity() != null && getView() != null) {
+                    InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    //인풋관련 메니져
+                    View currentFocus = getView().findFocus();
+                    if (currentFocus != null) {
+                        inputMethodManager.hideSoftInputFromWindow(currentFocus.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                        //키보드 숨기기
+                    }
+                }
                 if (searchList.isEmpty() && rowsArrayList.isEmpty()) { //데이터가 비여있으면
                     try {
                         ticker_data = marketInfoViewModel.getMarketInfo().getValue();
@@ -186,6 +196,9 @@ public class MarketInfoFragment extends Fragment {
      */
     private void loadMore() {
         rowsArrayList.add(null);
+        if (searchList.size() >= NEXT_LIMIT)
+            recyclerViewAdapter.notifyItemInserted(rowsArrayList.size() - 1);
+        //'프로그래스 바' 표기를 위함
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {

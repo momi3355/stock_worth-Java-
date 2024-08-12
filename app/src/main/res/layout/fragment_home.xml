@@ -45,7 +45,7 @@
 
     <TableLayout
         android:id="@+id/allMarket_tableLayout"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:stretchColumns="*"
@@ -54,4 +54,37 @@
         app:layout_constraintTop_toBottomOf="@+id/allMarket"
         app:layout_constraintWidth_percent="0.9">
     </TableLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/allMarket_tableLayout">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:text="업데이트 시간 :"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/update_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:text="0월 00일"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </RelativeLayout>
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

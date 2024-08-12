@@ -7,11 +7,13 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import com.momi3355.stockworth.LoadingActivity;
+import com.momi3355.stockworth.MainActivity;
 import com.momi3355.stockworth.R;
 
 import org.json.JSONException;
@@ -56,6 +58,7 @@ public class DataService extends Service {
         NotificationCompat.Builder stockBuilder = getStockNotification("주식정보 로딩 중....");
         // TODO : 팝업창 띄어서 허용을 해야한다.
 
+        Toast.makeText(getApplicationContext(), "Service start", Toast.LENGTH_SHORT).show();
         // Foreground Service로 실행
         startForeground(NOTIFICATION_ID, stockBuilder.build());
         // Background 서비스도 실행 요함. (설정으로 변경 가능)
@@ -72,10 +75,10 @@ public class DataService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         scheduler = Executors.newSingleThreadScheduledExecutor();
 
-        LocalTime now = LocalTime.now(); //현재 시간
+        //LocalTime now = LocalTime.now(); //현재 시간
         //시계의 0분, 20분, 40분 마다 업데이트
-        LocalTime nextTwentyMinutes = now.plusMinutes(now.getMinute() >= 40 ? 60 - now.getMinute() : 20 - now.getMinute());
-        Duration initialDelay = Duration.between(now, nextTwentyMinutes); //20분 될때까지 대기
+        //LocalTime nextTwentyMinutes = now.plusMinutes(now.getMinute() >= 40 ? 60 - now.getMinute() : 20 - now.getMinute());
+        //Duration initialDelay = Duration.between(now, nextTwentyMinutes); //20분 될때까지 대기
         // 여기에서 다른 알람도 호출 가능하다.
         //manager.notify() 를 이용하면 알람 내용변경 가능하다.
         //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
@@ -94,7 +97,7 @@ public class DataService extends Service {
             //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());
         //}, initialDelay.toMillis(), 20, TimeUnit.MINUTES); //이건 시간의 20분.
         }, 0, 10, TimeUnit.MINUTES); //이게 10분 마다 실행
-        return START_NOT_STICKY; //서비스가 강제 종료되어도 재시작하지 않음.
+        return super.onStartCommand(intent, flags, startId); //서비스가 강제 종료되어도 재시작하지 않음.
     }
 
     private void createNotificationChannel(final String id, int importance, String name, String description) {
@@ -121,9 +124,11 @@ public class DataService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.d("DataService", "onDestroy: 1");
         super.onDestroy();
         if (scheduler!= null) {
             scheduler.shutdown();
+            Log.d("DataService", "onDestroy: 2");
         }
     }
 }
