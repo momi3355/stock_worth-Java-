@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -16,8 +18,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.TickerInfoActivity;
+import com.momi3355.stockworth.data.AppData;
 import com.momi3355.stockworth.ui.market_info.MarketInfoFragment;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -79,6 +90,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         TextView itemPrice;
         TextView itemRate;
 
+        CheckBox itemFavorite;
+
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
             context = itemView.getContext();
@@ -88,6 +101,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             itemName = itemView.findViewById(R.id.item_name);
             itemPrice = itemView.findViewById(R.id.item_price);
             itemRate = itemView.findViewById(R.id.item_rate);
+
+            itemFavorite = itemView.findViewById(R.id.item_favorite);
         }
     }
 
@@ -137,16 +152,43 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             bg_toggle = bg_toggle == 0 ? 1 : 0; //토글 스위치
         }
+        ArrayList<String> favoriteData = AppData.getInstance().favoriteData;
 
-        viewHolder.itemRow.setClickable(true);
-        viewHolder.itemRow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(context, TickerInfoActivity.class);
-                intent.putExtra("ticker_name", viewHolder.itemName.getText());
-                //Activity를 변경하기전에 메게변수를 전달한다.
-                context.startActivity(intent);
+        for (int i = 0; i < favoriteData.size(); i++) {
+            if (favoriteData.get(i).contentEquals(viewHolder.itemName.getText())) {
+                viewHolder.itemFavorite.setChecked(true);
             }
+        }
+        viewHolder.itemFavorite.setOnClickListener(view -> {
+            CharSequence itemName = viewHolder.itemName.getText();
+            boolean isChecked = viewHolder.itemFavorite.isChecked();
+            Log.d("MarketInfoFragment", "populateItemRows: "+itemName+"_버튼 누름");
+            if (isChecked) { //즐겨찾기 추가
+                Log.d("MarketInfoFragment", "즐겨찾기 추가");
+                favoriteData.add((String)itemName);
+            } else {
+                Log.d("MarketInfoFragment", "즐겨찾기 취소");
+                favoriteData.remove((String)itemName);
+            }
+
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("data", new JSONArray(favoriteData));
+
+                Log.d("MarketInfoFragment", "json : "+jsonObject);
+
+                FileOutputStream outputStream = context.openFileOutput("favoriteData.json", Context.MODE_PRIVATE);
+                outputStream.write(jsonObject.toString().getBytes());
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+        viewHolder.itemRow.setClickable(true);
+        viewHolder.itemRow.setOnClickListener(view -> {
+            Intent intent = new Intent(context, TickerInfoActivity.class);
+            intent.putExtra("ticker_name", viewHolder.itemName.getText());
+            //Activity를 변경하기전에 메게변수를 전달한다.
+            context.startActivity(intent);
         });
     }
 

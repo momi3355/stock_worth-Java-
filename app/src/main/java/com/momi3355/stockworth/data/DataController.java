@@ -1,7 +1,12 @@
 package com.momi3355.stockworth.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.preference.PreferenceManager;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
@@ -14,6 +19,10 @@ import org.json.JSONObject;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 
+import java.io.Console;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -61,6 +70,7 @@ public class DataController {
     }
 
     public void load() {
+
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
             try {
@@ -69,24 +79,53 @@ public class DataController {
                 JSONArray array_data = data.stockData[dataType.getIndex()].getJSONArray("data");
                 if (array_data.length() == 0) //정보가 없을 경우
                     throw new IOException("404 error");
+                else { //정보가 없으면 정상적인 데이터가 아니기 때문에 하면 안된다.
+                    try {
+                        //백업 파일 생성(오프라인상태에서도 작동되게)
+                        FileOutputStream outputStream = context.openFileOutput(dataType + ".json", Context.MODE_PRIVATE);
+                        outputStream.write(json_data.getBytes());
+                    } catch (IOException ex) {
+                        Log.d("DataController", "백업 파일 생성하는 도중 파일을 쓸 수가 없습니다.");
+                    }
+                }
             } catch (Exception e) {
                 /* [여기오는 경우] */
-                // 1. 서버가 올바르지 않는 경우
+                // 1. 서버가 올바르지 않는 경우 or 서버가 오프라인인 경우
                 // 2. JSON에서 data겍체를 찾을 수 없는 경우.
                 // 3. 위에 있는 if (array_data.length() == 0) 에서 정보을 찾을 수 없는 경우.
                 // 4. JSON파일이 손상된 경우.
 
                 if (e instanceof IOException) {
                     Log.e("DataController", "server : " + e.getMessage());
+                    new Handler(context.getMainLooper()).post(()
+                            -> Toast.makeText(context, "서버가 오프라인 입니다.", Toast.LENGTH_SHORT).show());
                 } else { // JSONException
                     Log.e("DataController", "json file : error");
                 }
 
-                // TODO : 에러 표기 요함. (에러 디스플래이)
-                // 서버에러면 다음에 시도 하고 무시한다.
-                //  - Toast.makeText() 로 표기
-                // 그 외면 에러뜨고 종료한다.
+                //오프라인 모드
+                try {
+                    FileInputStream inputStream = context.openFileInput(dataType + ".json");
+                    data.stockData[i] = new JSONObject(getJsonString(inputStream));
+                } catch (IOException ex) {
+                    Log.d("DataController", "백업 파일을 불러오지 못하였습니다.");
+                } catch (JSONException ex) {
+                    ex.printStackTrace();
+                }
             }
+        }
+
+        // 즐겨찾기
+        try {
+            FileInputStream inputStream = context.openFileInput("favoriteData.json");
+            JSONObject favorite = new JSONObject(getJsonString(inputStream));
+            JSONArray array = favorite.getJSONArray("data");
+            for (int j = 0; j < array.length(); j++)
+                data.favoriteData.add(array.getString(j));
+        } catch (FileNotFoundException e) {
+            Log.d("DataController", "favoriteData.json 파일이 없습니다.");
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -102,7 +141,6 @@ public class DataController {
 //        }
     }
 
-    @Deprecated
     public static String getJsonString(InputStream is) {
         String json = "";
         try {

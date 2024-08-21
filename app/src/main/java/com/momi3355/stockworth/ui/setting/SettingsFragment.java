@@ -3,7 +3,9 @@ package com.momi3355.stockworth.ui.setting;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -12,24 +14,53 @@ import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceManager;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.momi3355.stockworth.R;
+import com.momi3355.stockworth.data.AppData;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     SharedPreferences prefs;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        setPreferencesFromResource(R.xml.settings_preference, null);
+        setPreferencesFromResource(R.xml.settings_preference, rootKey);
         prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         prefs.registerOnSharedPreferenceChangeListener(prefListener);
         initSummary(getPreferenceScreen());
+
+        //초기화 버튼 이벤트
+        Preference reset_btn = findPreference("reset");
+        assert reset_btn != null;
+        reset_btn.setOnPreferenceClickListener(preference -> {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.clear().apply();
+            setPreferencesFromResource(R.xml.settings_preference, rootKey); //다시 표기
+            initSummary(getPreferenceScreen());
+            Toast.makeText(requireContext(), "설정이 초기화 되었습니다.", Toast.LENGTH_SHORT).show();
+            return true;
+        });
+
+        //즐겨찾기_초기화 버튼 이벤트
+        Preference fareset_btn = findPreference("favorite_reset");
+        assert fareset_btn != null;
+        fareset_btn.setOnPreferenceClickListener(preference -> {
+            ArrayList<String> favoriteData = AppData.getInstance().favoriteData;
+            favoriteData.clear();
+            Toast.makeText(requireContext(), "즐겨찾기가 초기화 되었습니다.", Toast.LENGTH_SHORT).show();
+            return true;
+        });
     }
 
     SharedPreferences.OnSharedPreferenceChangeListener prefListener =
         //onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
         (sharedPreferences, key) -> {
-            updatePrefSummary(findPreference(key));
+            if (key != null)
+                updatePrefSummary(findPreference(key));
         };
 
     private void initSummary(Preference p) {

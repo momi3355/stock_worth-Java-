@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -19,6 +20,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.preference.PreferenceManager;
 
 import com.momi3355.stockworth.data.DataService;
 import com.momi3355.stockworth.databinding.ActivityMainBinding;
@@ -59,6 +61,11 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        //설정 동기화
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean temp = prefs.getBoolean("notifications_vibrate", true);
+
+        Log.d("MainActivity", "onCreate: "+temp);
 
         // 백그라운드 스레드 핸들러 초기화
         handlerThread = new HandlerThread("BackgroundThread");

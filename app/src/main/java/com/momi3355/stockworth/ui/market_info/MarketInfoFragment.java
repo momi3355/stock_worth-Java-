@@ -195,10 +195,14 @@ public class MarketInfoFragment extends Fragment {
      * 현제 스크롤을 최대치를 도달했을 때 실행하는 메소드
      */
     private void loadMore() {
-        rowsArrayList.add(null);
-        if (searchList.size() >= NEXT_LIMIT)
-            recyclerViewAdapter.notifyItemInserted(rowsArrayList.size() - 1);
-        //'프로그래스 바' 표기를 위함
+        recyclerView.post(() -> {
+            rowsArrayList.add(null);
+            if (searchList.size() <= 0)
+                recyclerViewAdapter.notifyItemInserted(rowsArrayList.size() - 1);
+            else if (searchList.size() >= NEXT_LIMIT)
+                recyclerViewAdapter.notifyItemInserted(rowsArrayList.size() - 1);
+            //'프로그래스 바' 표기를 위함
+        });
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {

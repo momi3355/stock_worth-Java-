@@ -4,6 +4,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import com.momi3355.stockworth.LoadingActivity;
 import com.momi3355.stockworth.MainActivity;
@@ -60,9 +62,13 @@ public class DataService extends Service {
 
         Toast.makeText(getApplicationContext(), "Service start", Toast.LENGTH_SHORT).show();
         // Foreground Service로 실행
-        startForeground(NOTIFICATION_ID, stockBuilder.build());
-        // Background 서비스도 실행 요함. (설정으로 변경 가능)
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("update", true)) {
+            startForeground(NOTIFICATION_ID, stockBuilder.build());
+            // Background 서비스도 실행 요함. (설정으로 변경 가능)
+
+        }
         // controller.load(); //로드는 'LoadingActivity' 에서 진행된다.
     }
 
@@ -74,6 +80,7 @@ public class DataService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         scheduler = Executors.newSingleThreadScheduledExecutor();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         //LocalTime now = LocalTime.now(); //현재 시간
         //시계의 0분, 20분, 40분 마다 업데이트
@@ -92,6 +99,9 @@ public class DataService extends Service {
         scheduler.scheduleAtFixedRate(() -> {
             //포그라운드.
             controller.update();
+            if (prefs.getBoolean("notifications", false)) {
+                Log.d("DataService", "onStartCommand: 알람 표기");
+            }
             // TODO : 성공하면 알람내용 - 코스피의 주가 수정, 날짜-시간 출력. (우선순위 낮음)
             //TODO : 메시지도 변경 요함
             //notificationManager.notify(NOTIFICATION_ID, getStockNotification("변경").build());

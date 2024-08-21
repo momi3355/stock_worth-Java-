@@ -2,6 +2,8 @@ package com.momi3355.stockworth.data;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * 어플에 대한 데이터를 저장하는 클래스.
  * <p>어느 곳이나 파일을 읽어야되기 때문에 싱글톤 패턴을 사용.</p>
@@ -10,6 +12,7 @@ import org.json.JSONObject;
  */
 public class AppData {
     public final JSONObject[] stockData = new JSONObject[DataType.getLength()];
+    public final ArrayList<String> favoriteData = new ArrayList<>();
     private static AppData instance;
 
     private AppData() { }

@@ -3,6 +3,7 @@ package com.momi3355.stockworth;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,7 +40,6 @@ public class LoadingActivity extends AppCompatActivity {
      * <p>※ 작업시간이 긴 작업은 <b>Activity</b>에서 하는 것은 권장되지 않는다.</p>
      */
     private final Runnable loadingProcess = () -> {
-        //TODO : load 에서 서버 url로 교체 요함.
         controller.load();
 
         Intent intent = new Intent(LoadingActivity.this, MainActivity.class);

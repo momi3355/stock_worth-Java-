@@ -46,13 +46,35 @@ public class TickerInfoActivity extends AppCompatActivity {
             });
 
             ArrayList<String[]> tickerInfo = controller.getTickerInfo(date.get(1), date.get(0), ticker_id);
+
             runOnUiThread(() -> {
                 TextView ticker_change_price = findViewById(R.id.ticker_change_price);
+                TextView ticker_now_price = findViewById(R.id.ticker_now_price);
+                TextView ticker_rate = findViewById(R.id.ticker_rate);
+
                 Integer afterPrice = Integer.valueOf(tickerInfo.get(1)[4]);
                 Integer beforePrice = Integer.valueOf(tickerInfo.get(0)[4]);
+                double tickerRate = Double.parseDouble(tickerInfo.get(1)[7]);
+                String tickerNowPrice_str = "";
+                if (tickerRate >= 0) {
+                    ticker_change_price.setText("+");
+                    ticker_change_price.setTextColor(getColor(R.color.red));
+                    ticker_rate.setTextColor(getColor(R.color.red));
+
+                } else {
+                    ticker_change_price.setText("");
+                    ticker_change_price.setTextColor(getColor(R.color.blue));
+                    ticker_rate.setTextColor(getColor(R.color.blue));
+                }
+
                 String changePrice = ticker_change_price.getText() //부호 포함
                         + String.format(Locale.KOREA, "%,d원", (afterPrice - beforePrice));
                 ticker_change_price.setText(changePrice);
+
+                String tickerRate_str = "("+tickerRate+"%)";
+                tickerNowPrice_str += String.format(Locale.KOREA, "%,d원", afterPrice);
+                ticker_rate.setText(tickerRate_str);
+                ticker_now_price.setText(tickerNowPrice_str);
             });
 
             runOnUiThread(() -> {
@@ -70,7 +92,7 @@ public class TickerInfoActivity extends AppCompatActivity {
 
                 String tradingValue = tickerInfo.get(1)[6];
                 String tradingValue_str = tradingValue;
-                Log.d("TickerInfoActivity", String.format(Locale.KOREA, "대금 %,d원", Long.valueOf(tradingValue)));
+                //Log.d("TickerInfoActivity", String.format(Locale.KOREA, "대금 %,d원", Long.valueOf(tradingValue)));
                 if (tradingValue.length() >= 13) { //조원
                     String group = tradingValue.substring(0, tradingValue.length() - 12); //조단위 추출
                     tradingValue_str = String.format(Locale.KOREA, "%,d조%,d억원",
@@ -105,58 +127,35 @@ public class TickerInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticker_info);
 
-        JSONObject ticker_object = null;
         String tickerId = null;
         try {
             JSONArray appData = AppData.getInstance().stockData[DataType.stock_data.getIndex()].getJSONArray("data");
             Intent intent = getIntent();
             //Activity가 이동하기전에 전달받은 변수.
             String tickerName = intent.getStringExtra("ticker_name");
-            Log.d("TickerInfoActivity", "onCreate: "+tickerName);
+            //Log.d("TickerInfoActivity", "onCreate: "+tickerName);
             // MainActivity에서 검색창으로 올 수 있으니깐 천체 검색한다.
             for (int i = 0; i < appData.length(); i++) {
                 JSONArray market = appData.getJSONObject(i).getJSONArray("stock_data");
                 for (int j = 0; j < market.length(); j++) {
                     JSONObject ticker = market.getJSONObject(j);
                     if (tickerName.equals(ticker.getString("name"))) {
-                        //TODO : 이 데이터도 py으로 새로운 값을 가지고 오는게 좋은거 같다.
-                        // 이 데이터는 30~40초 간격으로 업데이트된다.
                         tickerId = ticker.getString("id"); //id를 검색
-                        ticker_object = ticker;
                         break;
                     }
                 }
             }
 
             if (!(tickerId == null)) {
-                TextView ticker_id = findViewById(R.id.ticker_id);
                 TextView ticker_name = findViewById(R.id.ticker_name);
-                TextView ticker_now_price = findViewById(R.id.ticker_now_price);
-                TextView ticker_change_price = findViewById(R.id.ticker_change_price);
-                TextView ticker_rate = findViewById(R.id.ticker_rate);
+                TextView ticker_id = findViewById(R.id.ticker_id);
 
                 ticker_id.setText(tickerId);
                 ticker_name.setText(tickerName);
-
-                String tickerNowPrice_str = "";
-                int tickerNowPrice = ticker_object.getInt("price");
-                double tickerRate = ticker_object.getDouble("rate");
-                if (tickerRate >= 0) {
-                    ticker_change_price.setText("+");
-                    ticker_change_price.setTextColor(getColor(R.color.red));
-                    ticker_rate.setTextColor(getColor(R.color.red));
-
-                } else {
-                    ticker_change_price.setText("");
-                    ticker_change_price.setTextColor(getColor(R.color.blue));
-                    ticker_rate.setTextColor(getColor(R.color.blue));
-                }
-                String tickerRate_str = "("+tickerRate+"%)";
-                Log.d("TickerInfoActivity", "onCreate: "+tickerNowPrice);
-                tickerNowPrice_str += String.format(Locale.KOREA, "%,d원", tickerNowPrice);
-                ticker_rate.setText(tickerRate_str);
-                ticker_now_price.setText(tickerNowPrice_str);
             }
+//            else {
+//                /* [에러 출력 요함] */
+//            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
