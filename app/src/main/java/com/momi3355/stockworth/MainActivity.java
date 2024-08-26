@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private HandlerThread handlerThread;
     private Handler backgroundHandler;
 
+    private SharedPreferences prefs;
+
     private boolean isService;
 
     ServiceConnection conn = new ServiceConnection() {
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -113,12 +116,14 @@ public class MainActivity extends AppCompatActivity {
                 handlerThread.quitSafely();
             }
         }
-
-        if (isService) {
-            Intent intent = new Intent(getApplicationContext(), DataService.class);
-            stopService(intent);
-            unbindService(conn);
-            isService = false;
+        String update_type = prefs.getString("update_type", "app_running");
+        if (update_type.equals("app_running")) {
+            if (isService) {
+                Intent intent = new Intent(getApplicationContext(), DataService.class);
+                stopService(intent);
+                unbindService(conn);
+                isService = false;
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -29,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -152,10 +154,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             bg_toggle = bg_toggle == 0 ? 1 : 0; //토글 스위치
         }
-        ArrayList<String> favoriteData = AppData.getInstance().favoriteData;
+        HashSet<String> favoriteData = AppData.getInstance().favoriteData;
 
-        for (int i = 0; i < favoriteData.size(); i++) {
-            if (favoriteData.get(i).contentEquals(viewHolder.itemName.getText())) {
+        viewHolder.itemFavorite.setChecked(false); //기본값
+        for (String temp : favoriteData) {
+            if (temp.contentEquals(viewHolder.itemName.getText())) {
                 viewHolder.itemFavorite.setChecked(true);
             }
         }
@@ -164,10 +167,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             boolean isChecked = viewHolder.itemFavorite.isChecked();
             Log.d("MarketInfoFragment", "populateItemRows: "+itemName+"_버튼 누름");
             if (isChecked) { //즐겨찾기 추가
-                Log.d("MarketInfoFragment", "즐겨찾기 추가");
+                Toast.makeText(context, itemName+" 즐겨찾기 추가", Toast.LENGTH_SHORT).show();
                 favoriteData.add((String)itemName);
             } else {
-                Log.d("MarketInfoFragment", "즐겨찾기 취소");
+                Toast.makeText(context, itemName+" 즐겨찾기 취소", Toast.LENGTH_SHORT).show();
                 favoriteData.remove((String)itemName);
             }
 

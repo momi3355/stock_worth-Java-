@@ -90,8 +90,6 @@ def getMarket(date):
 def isRunMarket(countryCode):
     now = datetime.datetime.now()
     cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
-    if now.time().hour < 9:  # 장시간 전
-        now -= datetime.timedelta(days=1)
     return cals.is_session(now.strftime('%Y-%m-%d'))
 
 

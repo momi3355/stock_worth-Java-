@@ -35,6 +35,17 @@
         <item>60</item>
     </string-array>
 
+    <string-array name="update_type">
+        <item>앱 실행중일 때만</item>
+        <item>장시간일 때</item>
+        <item>상시</item>
+    </string-array>
+    <string-array name="update_type_value">
+        <item>app_running</item>
+        <item>market_time</item>
+        <item>always</item>
+    </string-array>
+
     <string-array name="notifications">
         <item>주식시장의 알림</item>
         <item>즐겨찾기에 관한 알림</item>

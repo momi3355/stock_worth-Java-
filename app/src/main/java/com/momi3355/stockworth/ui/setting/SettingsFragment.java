@@ -21,6 +21,7 @@ import com.momi3355.stockworth.data.AppData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -49,7 +50,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         Preference fareset_btn = findPreference("favorite_reset");
         assert fareset_btn != null;
         fareset_btn.setOnPreferenceClickListener(preference -> {
-            ArrayList<String> favoriteData = AppData.getInstance().favoriteData;
+            HashSet<String> favoriteData = AppData.getInstance().favoriteData;
             favoriteData.clear();
             Toast.makeText(requireContext(), "즐겨찾기가 초기화 되었습니다.", Toast.LENGTH_SHORT).show();
             return true;

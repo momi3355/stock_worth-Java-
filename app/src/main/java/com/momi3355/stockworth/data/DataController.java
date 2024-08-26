@@ -50,6 +50,11 @@ public class DataController {
         return stockObject.callAttr("getPreviousOpen", "XKRX").toString();
     }
 
+    public boolean isPreviousOpen() {
+        PyObject stockObject = py.getModule("stock");
+        return Boolean.parseBoolean(stockObject.callAttr("isRunMarket", "XKRX").toString());
+    }
+
     private String getServerData(DataType dataType) throws IOException {
         /* [주식 정보 추출] */
         String url = Server.URL;
@@ -70,7 +75,7 @@ public class DataController {
     }
 
     public void load() {
-
+        //TODO : 실행 할때 2번 실행 안되게 수정 요함.
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
             try {

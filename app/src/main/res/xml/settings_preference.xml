@@ -24,14 +24,13 @@
             android:key="update"
             android:summary="활성화를 하면 업데이트 시간대로 주식정보가 업데이트됩니다."
             android:title="자동 업데이트" />
-<!--        <androidx.preference.ListPreference-->
-<!--            android:dependency="update"-->
-<!--            android:defaultValue="10"-->
-<!--            android:entries="@array/update_time"-->
-<!--            android:entryValues="@array/update_time_value"-->
-<!--            android:key="update_time"-->
-<!--            android:positiveButtonText="@null"-->
-<!--            android:title="업데이트 시간" />-->
+        <androidx.preference.ListPreference
+            android:defaultValue="always"
+            android:entries="@array/update_type"
+            android:entryValues="@array/update_type_value"
+            android:key="update_type"
+            android:positiveButtonText="@null"
+            android:title="업데이트 타입" />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory android:title="알림">

@@ -2,7 +2,7 @@ package com.momi3355.stockworth.data;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * 어플에 대한 데이터를 저장하는 클래스.
@@ -12,7 +12,7 @@ import java.util.ArrayList;
  */
 public class AppData {
     public final JSONObject[] stockData = new JSONObject[DataType.getLength()];
-    public final ArrayList<String> favoriteData = new ArrayList<>();
+    public final HashSet<String> favoriteData = new HashSet<>();
     private static AppData instance;
 
     private AppData() { }
