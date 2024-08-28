@@ -1,25 +1,25 @@
 package com.momi3355.stockworth.data;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DataTicketInfo {
     private final PyObject stockObject;
-    final AppData data;
 
     public DataTicketInfo(Context context) {
         if (!Python.isStarted()) {
             Python.start(new AndroidPlatform(context));
         }
         Python py = Python.getInstance();
-        data = AppData.getInstance();
         stockObject = py.getModule("stock");
     }
 
@@ -39,10 +39,24 @@ public class DataTicketInfo {
         String[] result_list = result.toString().split("\n");
         ArrayList<String[]> list = new ArrayList<>();
         for (int i = 2; i < result_list.length; i++) {
-            Log.d("DataTicketInfo", result_list[i]);
+            //Log.d("DataTicketInfo", result_list[i]);
             list.add(result_list[i].split("\\s+")); //"\\s+"는 하나 이상의 공백을 의미
         }
+        return list;
+    }
 
+    public ArrayList<String[]> getTickerChartInfo(String ticker_id) {
+        final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        LocalDate now = LocalDate.now();
+        LocalDate before = now.minus(2, ChronoUnit.MONTHS);
+        PyObject result = stockObject.callAttr("getTickerInfo", before.format(dateFormat), now.format(dateFormat), ticker_id);
+        String[] result_list = result.toString().split("\n");
+        ArrayList<String[]> list = new ArrayList<>();
+        for (int i = 2; i < result_list.length; i++) {
+            //Log.d("DataTicketInfo", result_list[i]);
+            list.add(result_list[i].split("\\s+")); //"\\s+"는 하나 이상의 공백을 의미
+        }
         return list;
     }
 }

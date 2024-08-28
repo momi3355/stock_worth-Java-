@@ -7,6 +7,7 @@
             android:entries="@array/language"
             android:entryValues="@array/language_value"
             android:key="language"
+            android:summary="%s"
             android:positiveButtonText="@null"
             android:title="언어" />
         <androidx.preference.ListPreference
@@ -14,6 +15,7 @@
             android:entries="@array/theme"
             android:entryValues="@array/theme_value"
             android:key="theme"
+            android:summary="%s"
             android:positiveButtonText="@null"
             android:title="테마" />
     </androidx.preference.PreferenceCategory>
@@ -29,6 +31,7 @@
             android:entries="@array/update_type"
             android:entryValues="@array/update_type_value"
             android:key="update_type"
+            android:summary="%s"
             android:positiveButtonText="@null"
             android:title="업데이트 타입" />
     </androidx.preference.PreferenceCategory>
@@ -39,12 +42,12 @@
             android:key="notifications"
             android:summary="알림을 활성화 할려면 체크하세요."
             android:title="알림 활성화" />
-        <androidx.preference.CheckBoxPreference
-            android:dependency="notifications"
-            android:defaultValue="false"
-            android:key="notifications_vibrate"
-            android:summary="진동으로 알림을 받으려면 체크하세요."
-            android:title="진동" />
+<!--        <androidx.preference.CheckBoxPreference-->
+<!--            android:dependency="notifications"-->
+<!--            android:defaultValue="false"-->
+<!--            android:key="notifications_vibrate"-->
+<!--            android:summary="진동으로 알림을 받으려면 체크하세요."-->
+<!--            android:title="진동" />-->
         <androidx.preference.MultiSelectListPreference
             android:dependency="notifications"
             android:defaultValue="@array/notifications_value"

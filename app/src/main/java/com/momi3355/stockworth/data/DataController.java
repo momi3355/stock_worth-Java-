@@ -1,12 +1,7 @@
 package com.momi3355.stockworth.data;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.preference.PreferenceManager;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
@@ -16,10 +11,8 @@ import com.momi3355.stockworth.Server;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 
-import java.io.Console;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 
 public class DataController {
-    private final Python py; //필요없을 수 있다.
+    private final Python py;
     private final Context context;
     final AppData data;
 
@@ -75,7 +68,6 @@ public class DataController {
     }
 
     public void load() {
-        //TODO : 실행 할때 2번 실행 안되게 수정 요함.
         for (int i = 0; i < DataType.getLength(); i++) {
             DataType dataType = DataType.values()[i];
             try {
@@ -102,8 +94,8 @@ public class DataController {
 
                 if (e instanceof IOException) {
                     Log.e("DataController", "server : " + e.getMessage());
-                    new Handler(context.getMainLooper()).post(()
-                            -> Toast.makeText(context, "서버가 오프라인 입니다.", Toast.LENGTH_SHORT).show());
+                    //new Handler(context.getMainLooper()).post(()
+                    //        -> Toast.makeText(context, "서버가 오프라인 입니다.", Toast.LENGTH_SHORT).show());
                 } else { // JSONException
                     Log.e("DataController", "json file : error");
                 }

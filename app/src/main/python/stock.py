@@ -11,82 +11,6 @@ import pandas as pd
 import exchange_calendars as ecals
 
 
-def getTickers(date):
-    tickers = stock.get_market_ticker_list(market='KOSPI')
-    ticker_dict = dict()
-    ticker_dict['lib_name'] = 'pykrx'
-    ticker_dict['version'] = getVersion()
-    ticker_dict['update_time'] = date  # 시:분:초 를 적어도 된다.
-    ticker_dict['count'] = len(tickers)
-    ticker_dict['data'] = tickers
-    return json.dumps(ticker_dict, indent=3)
-
-
-def update_tickerInfo(ticker, updateTime):
-    info = stock.get_market_ohlcv(updateTime, updateTime, ticker, 'd')
-    stock_info = dict()
-    if not info.empty:
-        stock_info['id'] = ticker
-        stock_info['name'] = stock.get_market_ticker_name(ticker)
-        stock_info['rate'] = round(info['등락률'].values[0], 2)
-        stock_info['price'] = int(info['종가'].values[0])
-        stock_info['volume'] = int(info['거래량'].values[0])
-        # print(stock_info)
-    return stock_info
-
-
-def update_marketInfo(market, ticker_list):
-    market_list = list()
-    updateTime = getPreviousOpen('XKRX')
-    for market_name in market:
-        stock_list = list()
-        market_dict = dict()
-        market_dict['market_name'] = market_name
-
-        for i, ticker in enumerate(ticker_list):
-            stock_list.append(update_tickerInfo(ticker, updateTime))
-            if i % 500 == 0:
-                time.sleep(0.5)
-        market_dict['stock_data'] = stock_list
-        market_list.append(market_dict)
-    return market_list
-
-
-def getMarketInfo(date):
-    tickers = stock.get_market_ticker_list(market='KOSPI')
-    all_market_dict = dict()
-    all_market_dict['lib_name'] = 'pykrx'
-    all_market_dict['version'] = getVersion()
-    all_market_dict['update_time'] = date  # 시:분:초 를 적어도 된다.
-    all_market_dict['item_count'] = len(tickers)
-    all_market_dict['data'] = update_marketInfo(['KOSPI'], tickers)
-    return json.dumps(all_market_dict, ensure_ascii=False, indent=3)
-
-
-def update_market(market, date):
-    market_info_dict = dict()
-    market_info_dict['lib_name'] = 'pykrx'
-    market_info_dict['version'] = getVersion()
-    market_info_dict['update_time'] = date  # 시:분:초 를 적어도 된다.
-    market_info_dict['item_count'] = len(market)
-    updateTime = getPreviousOpen('XKRX')  # TODO 이른 아침이면 전날로 표기요함.
-    market_list = list()
-    for market_name in market:
-        item = stock.get_index_price_change(updateTime, updateTime, market_name).iloc[0]
-
-        market_dict = dict()
-        market_dict['market_name'] = market_name
-        market_dict['rate'] = round(item['등락률'], 2)
-        market_dict['price'] = round(item['종가'], 2)
-        market_list.append(market_dict)
-    market_info_dict['data'] = market_list
-    return json.dumps(market_info_dict, ensure_ascii=False, indent=3)
-
-
-def getMarket(date):
-    return update_market(['KOSPI', 'KOSDAQ'], date)
-
-
 def isRunMarket(countryCode):
     now = datetime.datetime.now()
     cals = ecals.get_calendar(countryCode)  # 한국코드('XKRX')
@@ -115,7 +39,6 @@ def getPreviousOpen_count(countryCode, count):
 
 
 def getTickerInfo(date1, date2, ticker_id):
-
     return stock.get_market_ohlcv(date1, date2, ticker_id, adjusted=False)
 
 

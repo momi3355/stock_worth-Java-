@@ -20,16 +20,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.TickerInfoActivity;
 import com.momi3355.stockworth.data.AppData;
-import com.momi3355.stockworth.ui.market_info.MarketInfoFragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -153,7 +150,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 viewHolder.itemRow.setBackgroundColor(Color.parseColor("#000715"));
             }
             bg_toggle = bg_toggle == 0 ? 1 : 0; //토글 스위치
-        }
+        } else viewHolder.itemName.setTextColor(Color.BLACK);
         HashSet<String> favoriteData = AppData.getInstance().favoriteData;
 
         viewHolder.itemFavorite.setChecked(false); //기본값

@@ -37,7 +37,12 @@
         <service
             android:name=".data.DataService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
+
+        <service
+            android:name=".data.NotificationService"
+            android:enabled="true"
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"

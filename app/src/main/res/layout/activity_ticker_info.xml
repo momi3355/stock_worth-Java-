@@ -86,7 +86,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <com.github.mikephil.charting.charts.LineChart
+    <com.github.mikephil.charting.charts.CandleStickChart
         android:id="@+id/ticker_chart"
         android:layout_width="match_parent"
         android:layout_height="170dp"
@@ -136,6 +136,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:thumb="@drawable/seekbar_thumb_disabled"
             android:enabled="false" />
 
         <RelativeLayout

@@ -5,13 +5,30 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.CandleStickChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.CandleData;
+import com.github.mikephil.charting.data.CandleDataSet;
+import com.github.mikephil.charting.data.CandleEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.Utils;
 import com.momi3355.stockworth.data.AppData;
 import com.momi3355.stockworth.data.DataTicketInfo;
 import com.momi3355.stockworth.data.DataType;
@@ -20,8 +37,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -78,6 +97,27 @@ public class TickerInfoActivity extends AppCompatActivity {
             });
 
             runOnUiThread(() -> {
+                String lowest = String.format(Locale.KOREA, "%,d원",
+                        Integer.valueOf(tickerInfo.get(1)[3]));
+                ((TextView) findViewById(R.id.day_range_lowest)).setText(lowest);
+
+                String highest = String.format(Locale.KOREA, "%,d원",
+                        Integer.valueOf(tickerInfo.get(1)[2]));
+                ((TextView) findViewById(R.id.day_range_highest)).setText(highest);
+
+                SeekBar day_range = findViewById(R.id.day_range);
+                int range_max = Integer.parseInt(tickerInfo.get(1)[2]) - Integer.parseInt(tickerInfo.get(1)[3]);
+                int range_progress = Integer.parseInt(tickerInfo.get(1)[4]) - Integer.parseInt(tickerInfo.get(1)[3]);
+                day_range.setMax(range_max);
+                day_range.setProgress(range_progress);  // 현재 값
+                day_range.setEnabled(false);
+            });
+
+            //year_range (현재 1년 최저가, 1년 최고가 위치)
+            //year_range_lowest (1년 최저가)
+            //year_range_highest (1년 최고가)
+
+            runOnUiThread(() -> {
                 String startPrice = String.format(Locale.KOREA, "%,d원",
                         Integer.valueOf(tickerInfo.get(1)[1]));
                 ((TextView) findViewById(R.id.ticker_price_start)).setText(startPrice);
@@ -111,16 +151,149 @@ public class TickerInfoActivity extends AppCompatActivity {
                 ((TextView)findViewById(R.id.ticker_tradingValue)).setText(tradingValue_str);
             });
 
-            //day_range (현재 1일 최저가, 1일 최고가 위치)
-            //day_range_lowest (1일 최저가)
-            //day_range_highest (1일 최고가)
-            //year_range (현재 1년 최저가, 1년 최고가 위치)
-            //year_range_lowest (1년 최저가)
-            //year_range_highest (1년 최고가)
+            //loadingDialog.dismiss();
+        }
+    };
+
+    private final Runnable lineChartRunnable = new Runnable() {
+        @Override
+        public void run() {
+            DataTicketInfo ticketInfo = new DataTicketInfo(getBaseContext());
+            String ticker_id = (String)((TextView)findViewById(R.id.ticker_id)).getText();
+
+            List<String[]> stockData = ticketInfo.getTickerChartInfo(ticker_id);
+            List<CandleEntry> entries = new ArrayList<>();
+            for (int i = 0; i < stockData.size(); i++) {
+                String[] temp = stockData.get(i);
+                float open = Float.parseFloat(temp[1]);
+                float shadowH = Float.parseFloat(temp[2]);
+                float shadowL = Float.parseFloat(temp[3]);
+                float close = Float.parseFloat(temp[4]);
+                entries.add(new CandleEntry(i, shadowH, shadowL, open, close, temp[0]));
+            }
+
+            //샘플 데이터
+            //entries.add(new CandleEntry(0, 225.0f, 219.84f, 224.94f, 221.07f));
+            //entries.add(new CandleEntry(1, 228.35f, 222.57f, 223.52f, 226.41f));
+            //entries.add(new CandleEntry(2, 226.84f,  222.52f, 225.75f, 223.84f));
+            //entries.add(new CandleEntry(3, 222.95f, 217.27f, 222.15f, 217.88f));
+
+            CandleStickChart chart = findViewById(R.id.ticker_chart);
+            chart.setScaleEnabled(false);  //터치를 통한 확대/축소 비활성화
+            chart.setPinchZoom(false);     //핀치 줌 비활성화
+            CandleDataSet dataSet = new CandleDataSet(entries, "Stock Data"); //데이터 삽입
+
+            //X축 날짜 포맷터 설정
+            XAxis xAxis = chart.getXAxis();
+            xAxis.setEnabled(false);
+
+            YAxis rightAxis = chart.getAxisRight();
+            rightAxis.setEnabled(false); //오른쪽 Y축 레이블 숨기기
+
+            Legend legend = chart.getLegend();
+            legend.setEnabled(false); //범례 숨기기
+
+            Description description = new Description();
+            description.setText("Select a data point");
+            chart.setDescription(description); //라벨 설정
+
+            //다크 모드 감지
+            boolean isDarkMode = (chart.getContext().getResources().getConfiguration().uiMode
+                    & Configuration.UI_MODE_NIGHT_MASK)
+                    == Configuration.UI_MODE_NIGHT_YES;
+
+            if (isDarkMode) {
+                //다크 모드 색상 설정
+                dataSet.setShadowColor(Color.WHITE);                 //차트 봉 색상
+                dataSet.setValueTextColor(Color.WHITE);              //데이터 값 텍스트 색상
+                chart.getXAxis().setTextColor(Color.LTGRAY);         //X축 레이블 색상
+                chart.getAxisLeft().setTextColor(Color.LTGRAY);      //Y축 레이블 색상
+                chart.getAxisRight().setTextColor(Color.LTGRAY);     //Y축 레이블 색상
+                chart.getLegend().setTextColor(Color.LTGRAY);        //범례 텍스트 색상
+                chart.getDescription().setTextColor(Color.WHITE);    //설명 텍스트 색상
+                dataSet.setIncreasingColor(Color.GREEN);             //양봉 색상
+                dataSet.setDecreasingColor(Color.RED);               //음봉 색상
+                dataSet.setDecreasingPaintStyle(Paint.Style.STROKE); //음봉 스타일
+            } else {
+                //라이트 모드 색상 설정
+                dataSet.setShadowColor(Color.BLACK);
+                dataSet.setValueTextColor(Color.BLACK);
+                chart.getXAxis().setTextColor(Color.DKGRAY);
+                chart.getAxisLeft().setTextColor(Color.DKGRAY);
+                chart.getAxisRight().setTextColor(Color.DKGRAY);
+                chart.getLegend().setTextColor(Color.DKGRAY);
+                chart.getDescription().setTextColor(Color.BLACK);
+                dataSet.setIncreasingColor(Color.rgb(224, 45, 35)); //red
+                dataSet.setDecreasingColor(Color.rgb(55, 124, 229)); //blue
+                dataSet.setDecreasingPaintStyle(Paint.Style.FILL);
+            }
+            dataSet.setShadowWidth(1.3f); //차트 봉 두께
+            dataSet.setIncreasingPaintStyle(Paint.Style.FILL); //양봉_스타일
+            dataSet.setNeutralColor(dataSet.getIncreasingColor()); //기본봉 색상
+
+            dataSet.setValueFormatter(new ValueFormatter() { //최고점만 표기
+                @Override
+                public String getFormattedValue(float value) {
+                    float highest = Float.MIN_VALUE;
+
+                    for (CandleEntry entry : entries) {
+                        if (entry.getHigh() > highest) highest = entry.getHigh();
+                    }
+
+                    if (value == highest) {
+                        return Utils.formatNumber(value, 0, true);
+                    } else {
+                        return ""; //미표기
+                    }
+                }
+            });
+
+            chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+                @Override
+                public void onValueSelected(Entry e, Highlight h) {
+                    //선택된 CandleEntry로 Description 업데이트
+                    if (e instanceof CandleEntry) {
+                        CandleEntry candleEntry = (CandleEntry) e;
+                        String open = Utils.formatNumber((int)candleEntry.getOpen(), 0, true);
+                        String close = Utils.formatNumber((int)candleEntry.getClose(), 0, true);
+                        String date = String.valueOf(candleEntry.getData());
+                        description.setText(date+" : "+open+" -> "+close);
+                        chart.setDescription(description);
+                        chart.invalidate();  //차트 갱신
+                    }
+                }
+
+                @Override
+                public void onNothingSelected() {
+                    //아무 것도 선택되지 않았을 때
+                    description.setText("Select a data point");
+                    chart.setDescription(description);
+                    chart.invalidate();  // 차트 갱신
+                }
+            });
+
+            CandleData candleData = new CandleData(dataSet);
+            chart.setData(candleData);
+
+            chart.invalidate(); //차트를 갱신
 
             loadingDialog.dismiss();
         }
     };
+
+    //날짜 문자열을 float 값으로 변환
+    private float dateToFloat(String dateString) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        try {
+            Date date = sdf.parse(dateString);
+            if (date != null) {
+                return (float) (date.getTime() / 1000L); //초 단위로 변환
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,6 +351,7 @@ public class TickerInfoActivity extends AppCompatActivity {
 
         //로딩 루틴 실행
         backgroundHandler.post(backgroundRunnable);
+        backgroundHandler.post(lineChartRunnable);
     }
 
     @Override

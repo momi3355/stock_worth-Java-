@@ -1,6 +1,5 @@
 package com.momi3355.stockworth;
 
-import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -23,6 +21,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 
 import com.momi3355.stockworth.data.DataService;
+import com.momi3355.stockworth.data.NotificationService;
 import com.momi3355.stockworth.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,7 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
     Runnable backgroundRunnable = () -> {
         // 백그라운드 처리 루틴
-
+        Intent intent = new Intent(getApplicationContext(), NotificationService.class);
+        startService(intent);
     };
 
     @Override
@@ -64,11 +64,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        //설정 동기화
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean temp = prefs.getBoolean("notifications_vibrate", true);
-
-        Log.d("MainActivity", "onCreate: "+temp);
 
         // 백그라운드 스레드 핸들러 초기화
         handlerThread = new HandlerThread("BackgroundThread");

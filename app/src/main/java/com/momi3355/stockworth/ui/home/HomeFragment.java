@@ -29,7 +29,6 @@ import com.momi3355.stockworth.ui.market_info.MarketInfoViewModel;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
