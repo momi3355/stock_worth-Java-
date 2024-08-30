@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +22,7 @@ import org.json.JSONObject;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -58,6 +60,7 @@ public class NotificationService extends Service {
     }
 
     public final DataController controller = new DataController(this);
+    public final DataTicketInfo ticketInfo = new DataTicketInfo(this);
 
     private NotificationManager notificationManager; //알람 메니져
     private ScheduledExecutorService scheduler; //데이터가 업데이트가 진행되는 스케줄러
@@ -79,31 +82,31 @@ public class NotificationService extends Service {
     }
 
     Runnable foreground = () -> {
-        Set<String> notifi_type = prefs.getStringSet("notification_detailed", null);
-        if (notifi_type.contains("foreground_notification")) {
-            final String title = "주식정보";
-            try {
-                JSONArray stockData = data.stockData[DataType.market_data.getIndex()]
-                        .getJSONArray("data");
-                JSONObject item = stockData.getJSONObject(0);
-                double rate = item.getDouble("rate");
-                int price = (int) item.getDouble("price");
+        if (controller.isPreviousOpen()) { //장 시간 중 이면
+            Set<String> notifi_type = prefs.getStringSet("notification_detailed", null);
+            if (notifi_type.contains("foreground_notification")) {
+                final String title = "주식정보";
+                String date = ticketInfo.getPreviousOpen(1).get(0);
+                String[] marketInfo = ticketInfo.getMarketInfo(date); //직접 가지고 온다.
+                double rate = Double.parseDouble(marketInfo[2]);
+                int price = Integer.parseInt(marketInfo[1]);
+
                 String rate_arrow = (rate >= 0.00) ? "↑" : "↓";
                 String main_str = "코스피 " + price + "원 " + rate_arrow + rate + "%";
 
                 NotificationType type = NotificationType.foreground;
                 NotificationCompat.Builder notification = getStockNotification(type.getFileName(), title,
                         main_str, true);
-
                 notificationManager.notify(type.getIndex(), notification.build());
-                startForeground(type.getIndex(), notification.build());
-            } catch (JSONException e) {
-                e.printStackTrace();
+            }
+            if (notifi_type.contains("favorites_notification")) {
+                //TODO : 즐겨찾기의 알림
             }
         }
     };
 
     Runnable market = () -> {
+        Log.d("NotificationService", "market: 알림 실행");
         boolean enableNotifi = false;
         Set<String> notifi_type = prefs.getStringSet("notification_detailed", null);
         if (notifi_type.contains("market_notification")) {
@@ -149,7 +152,6 @@ public class NotificationService extends Service {
                         getSummaryNotification(channel_id, title).build());
             }
         }
-        // TODO : 즐겨찾는 주가 표기도 요함.
     };
 
     @Override
@@ -158,11 +160,41 @@ public class NotificationService extends Service {
         //  1. 포그라운드 - 실시간 주식정보
         //  2. 백그라운드 - 마켓정보 및 즐겨찾는 주가 %알림.
         if (prefs.getBoolean("notifications", true)) {
+            Set<String> notifi_type = prefs.getStringSet("notification_detailed", null);
+            if (notifi_type.contains("foreground_notification")) {
+                final String title = "주식정보";
+                try {
+                    JSONArray stockData = data.stockData[DataType.market_data.getIndex()]
+                            .getJSONArray("data");
+                    JSONObject item = stockData.getJSONObject(0);
+                    double rate = item.getDouble("rate");
+                    int price = (int) item.getDouble("price");
+
+                    String rate_arrow = (rate >= 0.00) ? "↑" : "↓";
+                    String main_str = "코스피 " + price + "원 " + rate_arrow + rate + "%";
+
+                    NotificationType type = NotificationType.foreground;
+                    NotificationCompat.Builder notification = getStockNotification(type.getFileName(), title,
+                            main_str, true);
+
+                    notificationManager.notify(type.getIndex(), notification.build());
+                    startForeground(type.getIndex(), notification.build());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
             scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(foreground, 0, 15, TimeUnit.MINUTES);
-            scheduler.scheduleAtFixedRate(market, 0, 1, TimeUnit.MINUTES);
+            scheduler.scheduleAtFixedRate(foreground, 1, 15, TimeUnit.MINUTES);
+            //scheduler.scheduleAtFixedRate(market, 0, 1, TimeUnit.MINUTES);
         }
         return START_STICKY;
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     private void createNotificationChannel(final String id, String description) {
@@ -209,11 +241,5 @@ public class NotificationService extends Service {
         if (scheduler != null) {
             scheduler.shutdown();
         }
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 }

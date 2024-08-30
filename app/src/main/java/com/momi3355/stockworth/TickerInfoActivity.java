@@ -39,23 +39,31 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class TickerInfoActivity extends AppCompatActivity {
     private final DataTicketInfo controller = new DataTicketInfo(this);
     private LoadingDialog loadingDialog;
-    private HandlerThread handlerThread;
-    private Handler backgroundHandler;
+    private HandlerThread createThread;
+    private Handler createHandler;
+    private Timer background;
 
     private final Runnable backgroundRunnable = new Runnable() {
         @Override
         public void run() {
+            Log.d("TickerInfoActivity", "background : 백그라운드 실행 중");
             String ticker_id = (String)((TextView)findViewById(R.id.ticker_id)).getText();
 
-            List<String> date = controller.getPreviousOpen(1);
+            List<String> date = controller.getPreviousOpen(3);
             //UI를 변경하기위해서 사용하는 Thread
             runOnUiThread(() -> {
                 String month = date.get(0).substring(4, 6);
@@ -64,7 +72,7 @@ public class TickerInfoActivity extends AppCompatActivity {
                 ((TextView)findViewById(R.id.day)).setText(date_str);
             });
 
-            ArrayList<String[]> tickerInfo = controller.getTickerInfo(date.get(1), date.get(0), ticker_id);
+            final ArrayList<String[]> tickerInfo = controller.getTickerInfo(date.get(1), date.get(0), ticker_id);
 
             runOnUiThread(() -> {
                 TextView ticker_change_price = findViewById(R.id.ticker_change_price);
@@ -113,10 +121,6 @@ public class TickerInfoActivity extends AppCompatActivity {
                 day_range.setEnabled(false);
             });
 
-            //year_range (현재 1년 최저가, 1년 최고가 위치)
-            //year_range_lowest (1년 최저가)
-            //year_range_highest (1년 최고가)
-
             runOnUiThread(() -> {
                 String startPrice = String.format(Locale.KOREA, "%,d원",
                         Integer.valueOf(tickerInfo.get(1)[1]));
@@ -149,6 +153,36 @@ public class TickerInfoActivity extends AppCompatActivity {
                             Long.valueOf(tradingValue));
                 }
                 ((TextView)findViewById(R.id.ticker_tradingValue)).setText(tradingValue_str);
+            });
+
+
+            runOnUiThread(() -> {
+                DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+                LocalDate before = LocalDate.now().minus(12, ChronoUnit.MONTHS);
+                ArrayList<String[]> tickerYearInfo = controller.getTickerInfo(before.format(dateFormat), date.get(0), "m", ticker_id);
+
+                int year_max = Integer.MIN_VALUE;
+                int year_min = Integer.MAX_VALUE;
+                for (String[] item : tickerYearInfo) {
+                    int min = Integer.parseInt(item[3]);
+                    int max = Integer.parseInt(item[2]);
+
+                    if (year_min > min) year_min = min;
+                    if (year_max < max) year_max = max;
+                }
+
+                String lowest = String.format(Locale.KOREA, "%,d원", year_min);
+                ((TextView) findViewById(R.id.year_range_lowest)).setText(lowest);
+
+                String highest = String.format(Locale.KOREA, "%,d원", year_max);
+                ((TextView) findViewById(R.id.year_range_highest)).setText(highest);
+
+                SeekBar year_range = findViewById(R.id.year_range);
+                int range_max = year_max - year_min;
+                int range_progress = Integer.parseInt(tickerInfo.get(1)[4]) - year_min;
+                year_range.setMax(range_max);
+                year_range.setProgress(range_progress);  // 현재 값
+                year_range.setEnabled(false);
             });
 
             //loadingDialog.dismiss();
@@ -236,15 +270,12 @@ public class TickerInfoActivity extends AppCompatActivity {
                 public String getFormattedValue(float value) {
                     float highest = Float.MIN_VALUE;
 
-                    for (CandleEntry entry : entries) {
+                    for (CandleEntry entry : entries)
                         if (entry.getHigh() > highest) highest = entry.getHigh();
-                    }
 
                     if (value == highest) {
                         return Utils.formatNumber(value, 0, true);
-                    } else {
-                        return ""; //미표기
-                    }
+                    } else return ""; //미표기
                 }
             });
 
@@ -345,22 +376,26 @@ public class TickerInfoActivity extends AppCompatActivity {
         loadingDialog.show();
 
         //thread 설정
-        handlerThread = new HandlerThread("BackgroundThread");
-        handlerThread.start();
-        backgroundHandler = new Handler(handlerThread.getLooper());
+        createThread = new HandlerThread("CreateThread");
+        createThread.start();
+        createHandler = new Handler(createThread.getLooper());
 
-        //로딩 루틴 실행
-        backgroundHandler.post(backgroundRunnable);
-        backgroundHandler.post(lineChartRunnable);
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                createHandler.post(backgroundRunnable);
+                createHandler.post(lineChartRunnable);
+            }
+        };
+        background.scheduleAtFixedRate(timerTask, 0, 180000); //3분마다 실행.
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //뒤로 가기를 눌렀을 때 발동하는 이벤트
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -375,11 +410,15 @@ public class TickerInfoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (backgroundHandler!= null) {
-            backgroundHandler.removeCallbacksAndMessages(null);
-            if (handlerThread!= null) {
-                handlerThread.quitSafely();
+        if (createHandler!= null) {
+            createHandler.removeCallbacksAndMessages(null);
+            if (createThread!= null) {
+                createThread.quitSafely();
             }
+        }
+
+        if (background!= null) {
+            background.cancel();
         }
     }
 }

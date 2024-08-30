@@ -116,11 +116,6 @@ def getPreviousOpen(countryCode):
 #         open_list.append(cals.previous_open(now).strftime('%Y%m%d'))  # 이전 개장일
 #     return open_list
 
-
-def getTickerInfo(date1, date2, ticker_id):
-    return stock.get_market_ohlcv(date1, date2, ticker_id, adjusted=False)
-
-
 def getVersion():
     return pykrx.__version__
 

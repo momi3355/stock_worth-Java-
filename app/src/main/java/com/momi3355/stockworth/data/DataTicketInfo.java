@@ -1,6 +1,7 @@
 package com.momi3355.stockworth.data;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
@@ -34,8 +35,17 @@ public class DataTicketInfo {
         return list;
     }
 
+    public String[] getMarketInfo(String date) {
+        PyObject result = stockObject.callAttr("getMarketInfo", date, "KOSPI");
+        return result.toString().split("\\s+");
+    }
+
     public ArrayList<String[]> getTickerInfo(String date1, String date2, String ticker_id) {
-        PyObject result = stockObject.callAttr("getTickerInfo", date1, date2, ticker_id);
+        return getTickerInfo(date1, date2, "d", ticker_id);
+    }
+
+    public ArrayList<String[]> getTickerInfo(String date1, String date2, String format, String ticker_id) {
+        PyObject result = stockObject.callAttr("getTickerInfo", date1, date2, format, ticker_id);
         String[] result_list = result.toString().split("\n");
         ArrayList<String[]> list = new ArrayList<>();
         for (int i = 2; i < result_list.length; i++) {
@@ -50,13 +60,6 @@ public class DataTicketInfo {
 
         LocalDate now = LocalDate.now();
         LocalDate before = now.minus(2, ChronoUnit.MONTHS);
-        PyObject result = stockObject.callAttr("getTickerInfo", before.format(dateFormat), now.format(dateFormat), ticker_id);
-        String[] result_list = result.toString().split("\n");
-        ArrayList<String[]> list = new ArrayList<>();
-        for (int i = 2; i < result_list.length; i++) {
-            //Log.d("DataTicketInfo", result_list[i]);
-            list.add(result_list[i].split("\\s+")); //"\\s+"는 하나 이상의 공백을 의미
-        }
-        return list;
+        return getTickerInfo(before.format(dateFormat), now.format(dateFormat), ticker_id);
     }
 }

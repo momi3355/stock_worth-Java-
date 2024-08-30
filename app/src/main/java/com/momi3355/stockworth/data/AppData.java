@@ -13,6 +13,7 @@ import java.util.HashSet;
 public class AppData {
     public final JSONObject[] stockData = new JSONObject[DataType.getLength()];
     public final HashSet<String> favoriteData = new HashSet<>();
+    public String favoriteStock = "없음";
     private static AppData instance;
 
     private AppData() { }

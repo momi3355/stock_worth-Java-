@@ -62,12 +62,13 @@
             android:entries="@array/notifications_name_value"
             android:entryValues="@array/notifications_name_value"
             android:key="notifications_foreground_firstName"
+            android:summary="%s"
             android:positiveButtonText="@null"
             android:title="상시 표기할 주식시장" />
         <androidx.preference.Preference
             android:dependency="notifications"
             android:defaultValue="없음"
-            android:key="notifications_foreground_secondName"
+            android:key="foreground_secondName"
             android:summary="/* 이거는 즐겨찾기 리스트를 만들어서 선택 */"
             android:title="상시 표기할 주가" />
     </androidx.preference.PreferenceCategory>

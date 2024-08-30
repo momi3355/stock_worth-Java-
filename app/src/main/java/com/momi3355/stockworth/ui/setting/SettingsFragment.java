@@ -2,6 +2,7 @@ package com.momi3355.stockworth.ui.setting;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,7 +21,10 @@ import com.momi3355.stockworth.R;
 import com.momi3355.stockworth.data.AppData;
 import com.momi3355.stockworth.data.NotificationService;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -31,6 +35,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.settings_preference, rootKey);
         prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity());
         String theme = prefs.getString("theme", "device");
+        setForegroundStock();
         switch (theme) {
             case "light":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -98,6 +103,45 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
+        setPreference("foreground_secondName", new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                AppData appData = AppData.getInstance();
+
+                List<String> favoriteData = new ArrayList<>(appData.favoriteData);
+                favoriteData.add("* 없음 *"); //선택을 안 할 수도 있기 때문에
+                Collections.sort(favoriteData); //정렬
+                CharSequence[] item_data = favoriteData.toArray(new CharSequence[0]);
+
+                AlertDialog.Builder dialog = new AlertDialog.Builder(requireActivity());
+                dialog.setTitle("상시 표기할 주가"); //제목
+                if (favoriteData.isEmpty()) {
+                    dialog.setMessage("\n즐겨찾기가 없습니다.\n\n추가해 주세요.");
+                } else {
+                    int checkedItem = -1; //선택한 항목이 없는
+                    if (appData.favoriteStock.contains("없음")) {
+                        checkedItem = 0;
+                    } else {
+                        for (int i = 0; i < item_data.length; i++)
+                            if (item_data[i].equals(appData.favoriteStock))
+                                checkedItem = i;
+                        if (checkedItem == -1) {
+                            checkedItem = 0; //'* 없음 *'을 강제 선택
+                            appData.favoriteStock = "없음";
+                        }
+                    }
+
+                    dialog.setSingleChoiceItems(item_data, checkedItem, (dialogInterface, i) -> {
+                        appData.favoriteStock = (String)item_data[i];
+                        setForegroundStock();
+                        dialogInterface.dismiss(); //다이얼로그 종료
+                    }).setNegativeButton("취소", null);
+                }
+                dialog.show();
+                return true;
+            }
+        });
+
         //초기화 버튼 이벤트
         setPreference("reset", new Preference.OnPreferenceClickListener() {
             @Override
@@ -137,6 +181,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+    }
+
+    void setForegroundStock() {
+        Preference preference = findPreference("foreground_secondName");
+        if (preference != null) {
+            preference.setSummary(AppData.getInstance().favoriteStock);
+        }
     }
 
     void setPreference(String key, Object listener) {

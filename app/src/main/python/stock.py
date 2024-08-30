@@ -37,9 +37,11 @@ def getPreviousOpen_count(countryCode, count):
         open_list.append(cals.previous_open(now).strftime('%Y%m%d'))  # 이전 개장일
     return open_list
 
+def getMarketInfo(date, market_name):
+    return stock.get_index_price_change(date, date, market_name).iloc[0]
 
-def getTickerInfo(date1, date2, ticker_id):
-    return stock.get_market_ohlcv(date1, date2, ticker_id, adjusted=False)
+def getTickerInfo(date1, date2, date_format, ticker_id):
+    return stock.get_market_ohlcv(date1, date2, ticker_id, date_format, adjusted=False)
 
 
 def getVersion():
@@ -73,4 +75,4 @@ if __name__ == "__main__":
     # print(getMarket(now.strftime('%Y%m') + '08'))
     print(temp())
 
-    print(getTickerInfo("20240731", "20240801", "001040"))
+    print(getTickerInfo("20240731", "20240801", "d", "001040"))

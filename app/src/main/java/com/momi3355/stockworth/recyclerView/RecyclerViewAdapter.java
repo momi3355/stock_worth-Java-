@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -120,6 +121,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     private void populateItemRows(ItemViewHolder viewHolder, int position) {
+        AppData appData = AppData.getInstance();
         TickerInfo item = itemList.get(position);
 
         String price_str = String.format(Locale.KOREA, "%,d원", item.item_price);
@@ -151,7 +153,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             bg_toggle = bg_toggle == 0 ? 1 : 0; //토글 스위치
         } else viewHolder.itemName.setTextColor(Color.BLACK);
-        HashSet<String> favoriteData = AppData.getInstance().favoriteData;
+        HashSet<String> favoriteData = appData.favoriteData;
 
         viewHolder.itemFavorite.setChecked(false); //기본값
         for (String temp : favoriteData) {
@@ -160,6 +162,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         }
         viewHolder.itemFavorite.setOnClickListener(view -> {
+            String favoriteStock = appData.favoriteStock;
             CharSequence itemName = viewHolder.itemName.getText();
             boolean isChecked = viewHolder.itemFavorite.isChecked();
             Log.d("MarketInfoFragment", "populateItemRows: "+itemName+"_버튼 누름");
@@ -168,6 +171,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 favoriteData.add((String)itemName);
             } else {
                 Toast.makeText(context, itemName+" 즐겨찾기 취소", Toast.LENGTH_SHORT).show();
+                if (favoriteStock.equals((String)itemName)) {
+                    appData.favoriteStock = "없음";
+                }
                 favoriteData.remove((String)itemName);
             }
 
