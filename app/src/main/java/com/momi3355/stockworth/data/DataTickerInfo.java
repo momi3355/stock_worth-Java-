@@ -1,7 +1,6 @@
 package com.momi3355.stockworth.data;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
@@ -13,10 +12,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataTicketInfo {
+public class DataTickerInfo {
     private final PyObject stockObject;
 
-    public DataTicketInfo(Context context) {
+    public DataTickerInfo(Context context) {
         if (!Python.isStarted()) {
             Python.start(new AndroidPlatform(context));
         }

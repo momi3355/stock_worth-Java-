@@ -26,6 +26,7 @@ public class LoadingActivity extends AppCompatActivity {
      */
     private final Runnable loadingProcess = () -> {
         controller.load();
+        controller.setTickerMap();
 
         Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
         //loading -> main으로 이동하는 intent

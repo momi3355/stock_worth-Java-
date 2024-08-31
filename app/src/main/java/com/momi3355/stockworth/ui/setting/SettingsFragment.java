@@ -134,6 +134,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     dialog.setSingleChoiceItems(item_data, checkedItem, (dialogInterface, i) -> {
                         appData.favoriteStock = (String)item_data[i];
                         setForegroundStock();
+                        //알림 재시작
+                        Activity activity = requireActivity();
+                        Intent intent = new Intent(activity, NotificationService.class);
+                        activity.stopService(intent);
+                        activity.startService(intent);
                         dialogInterface.dismiss(); //다이얼로그 종료
                     }).setNegativeButton("취소", null);
                 }

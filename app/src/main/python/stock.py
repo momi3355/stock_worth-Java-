@@ -1,7 +1,9 @@
 import datetime
 import json
 import os
+import random
 import time
+
 import pykrx
 from numpy import double
 from pykrx import stock
@@ -9,6 +11,19 @@ from pykrx import bond
 # import yfinance as yf
 import pandas as pd
 import exchange_calendars as ecals
+
+
+def getTickers():
+    tickers = stock.get_market_ticker_list(market='KOSPI')
+    ticker_dict = dict()
+    i = 1
+    for tickerId in tickers:
+        if i % 150 == 0:
+            time.sleep(random.uniform(2, 4))  # 2 ~ 4s
+        name = stock.get_market_ticker_name(tickerId)
+        ticker_dict[name] = tickerId
+        i += 1
+    return ticker_dict
 
 
 def isRunMarket(countryCode):
@@ -37,8 +52,10 @@ def getPreviousOpen_count(countryCode, count):
         open_list.append(cals.previous_open(now).strftime('%Y%m%d'))  # 이전 개장일
     return open_list
 
+
 def getMarketInfo(date, market_name):
     return stock.get_index_price_change(date, date, market_name).iloc[0]
+
 
 def getTickerInfo(date1, date2, date_format, ticker_id):
     return stock.get_market_ohlcv(date1, date2, ticker_id, date_format, adjusted=False)

@@ -30,7 +30,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Utils;
 import com.momi3355.stockworth.data.AppData;
-import com.momi3355.stockworth.data.DataTicketInfo;
+import com.momi3355.stockworth.data.DataTickerInfo;
 import com.momi3355.stockworth.data.DataType;
 
 import org.json.JSONArray;
@@ -43,7 +43,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -51,7 +50,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TickerInfoActivity extends AppCompatActivity {
-    private final DataTicketInfo controller = new DataTicketInfo(this);
+    private final DataTickerInfo controller = new DataTickerInfo(this);
     private LoadingDialog loadingDialog;
     private HandlerThread createThread;
     private Handler createHandler;
@@ -192,7 +191,7 @@ public class TickerInfoActivity extends AppCompatActivity {
     private final Runnable lineChartRunnable = new Runnable() {
         @Override
         public void run() {
-            DataTicketInfo ticketInfo = new DataTicketInfo(getBaseContext());
+            DataTickerInfo ticketInfo = new DataTickerInfo(getBaseContext());
             String ticker_id = (String)((TextView)findViewById(R.id.ticker_id)).getText();
 
             List<String[]> stockData = ticketInfo.getTickerChartInfo(ticker_id);
@@ -380,6 +379,7 @@ public class TickerInfoActivity extends AppCompatActivity {
         createThread.start();
         createHandler = new Handler(createThread.getLooper());
 
+        background = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {

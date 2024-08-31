@@ -21,10 +21,14 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DataController {
-    private final Python py;
     private final Context context;
+    private final PyObject stockObject;
+    private final HashMap<String, String> tickerMap = new HashMap<>();
     final AppData data;
 
     public DataController(Context context) {
@@ -33,18 +37,17 @@ public class DataController {
             //싱글톤 패턴이라서 아무곳이나 getInstance()를 가지고 오면 사용이 가능.
             Python.start(new AndroidPlatform(this.context));
         }
-        py = Python.getInstance();
+        Python py = Python.getInstance();
+        stockObject = py.getModule("stock");
         data = AppData.getInstance();
     }
 
     @Deprecated
     public String getPreviousOpen() {
-        PyObject stockObject = py.getModule("stock");
         return stockObject.callAttr("getPreviousOpen", "XKRX").toString();
     }
 
     public boolean isPreviousOpen() {
-        PyObject stockObject = py.getModule("stock");
         return Boolean.parseBoolean(stockObject.callAttr("isRunMarket", "XKRX").toString());
     }
 
@@ -136,6 +139,25 @@ public class DataController {
 //            String input = getServerData(dataType);
 //            data.stockData[dataType.getIndex()] = new JSONObject(input);
 //        }
+    }
+
+    public void setTickerMap() {
+        PyObject result = stockObject.callAttr("getTickers");
+        Map<PyObject, PyObject> pythonList = result.asMap();
+        // 각 PyObject를 Integer로 변환하여 ArrayList<Integer>를 구성
+        for (PyObject key : pythonList.keySet()) {
+            PyObject value = pythonList.get(key);
+            if (value != null) {
+                tickerMap.put(key.toJava(String.class), value.toJava(String.class));
+            } else {
+                Log.e("DataController", "setTickerMap: value가 없습니다.");
+                return;
+            }
+        }
+    }
+
+    public HashMap<String, String> getTickerMap() {
+        return tickerMap;
     }
 
     public static String getJsonString(InputStream is) {
