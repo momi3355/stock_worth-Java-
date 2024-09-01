@@ -18,8 +18,8 @@ def getTickers():
     ticker_dict = dict()
     i = 1
     for tickerId in tickers:
-        if i % 150 == 0:
-            time.sleep(random.uniform(2, 4))  # 2 ~ 4s
+        if i % 400 == 0:
+            time.sleep(10)  # 10ms
         name = stock.get_market_ticker_name(tickerId)
         ticker_dict[name] = tickerId
         i += 1

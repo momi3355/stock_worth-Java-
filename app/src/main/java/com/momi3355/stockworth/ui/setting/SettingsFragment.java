@@ -107,7 +107,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             @Override
             public boolean onPreferenceClick(@NonNull Preference preference) {
                 AppData appData = AppData.getInstance();
-
+                String name = prefs.getString("favoriteStock", "없음");
                 List<String> favoriteData = new ArrayList<>(appData.favoriteData);
                 favoriteData.add("* 없음 *"); //선택을 안 할 수도 있기 때문에
                 Collections.sort(favoriteData); //정렬
@@ -119,20 +119,24 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     dialog.setMessage("\n즐겨찾기가 없습니다.\n\n추가해 주세요.");
                 } else {
                     int checkedItem = -1; //선택한 항목이 없는
-                    if (appData.favoriteStock.contains("없음")) {
+                    if (name.contains("없음")) {
                         checkedItem = 0;
                     } else {
                         for (int i = 0; i < item_data.length; i++)
-                            if (item_data[i].equals(appData.favoriteStock))
+                            if (item_data[i].equals(name))
                                 checkedItem = i;
                         if (checkedItem == -1) {
                             checkedItem = 0; //'* 없음 *'을 강제 선택
-                            appData.favoriteStock = "없음";
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("favoriteStock", "없음");
+                            editor.apply();
                         }
                     }
 
                     dialog.setSingleChoiceItems(item_data, checkedItem, (dialogInterface, i) -> {
-                        appData.favoriteStock = (String)item_data[i];
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("favoriteStock", (String)item_data[i]);
+                        editor.apply();
                         setForegroundStock();
                         //알림 재시작
                         Activity activity = requireActivity();
@@ -191,7 +195,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     void setForegroundStock() {
         Preference preference = findPreference("foreground_secondName");
         if (preference != null) {
-            preference.setSummary(AppData.getInstance().favoriteStock);
+            preference.setSummary(prefs.getString("favoriteStock", "없음"));
         }
     }
 

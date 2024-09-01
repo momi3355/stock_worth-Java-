@@ -2,6 +2,7 @@ package com.momi3355.stockworth.recyclerView;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.momi3355.stockworth.R;
@@ -38,13 +40,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private final int VIEW_TYPE_LOADING = 1;
 
     private final List<TickerInfo> itemList;
-
+    private SharedPreferences prefs;
     private final boolean isDarkMode;
 
     private int bg_toggle = 0;
 
-    public RecyclerViewAdapter(List<TickerInfo> list, boolean isDarkMode) {
+    public RecyclerViewAdapter(List<TickerInfo> list, SharedPreferences prefs, boolean isDarkMode) {
         itemList = list;
+
+        this.prefs = prefs;
         this.isDarkMode = isDarkMode;
     }
 
@@ -162,7 +166,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         }
         viewHolder.itemFavorite.setOnClickListener(view -> {
-            String favoriteStock = appData.favoriteStock;
+            String name = prefs.getString("favoriteStock", "없음");
             CharSequence itemName = viewHolder.itemName.getText();
             boolean isChecked = viewHolder.itemFavorite.isChecked();
             Log.d("MarketInfoFragment", "populateItemRows: "+itemName+"_버튼 누름");
@@ -171,8 +175,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 favoriteData.add((String)itemName);
             } else {
                 Toast.makeText(context, itemName+" 즐겨찾기 취소", Toast.LENGTH_SHORT).show();
-                if (favoriteStock.equals((String)itemName)) {
-                    appData.favoriteStock = "없음";
+                if (name.equals((String)itemName)) {
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("favoriteStock", "없음");
+                    editor.apply();
                 }
                 favoriteData.remove((String)itemName);
             }

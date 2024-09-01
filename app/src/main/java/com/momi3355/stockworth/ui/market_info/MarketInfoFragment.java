@@ -1,8 +1,10 @@
 package com.momi3355.stockworth.ui.market_info;
 
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -10,6 +12,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +30,7 @@ import com.momi3355.stockworth.data.DataType;
 import com.momi3355.stockworth.recyclerView.RecyclerViewAdapter;
 import com.momi3355.stockworth.recyclerView.TickerInfo;
 import com.momi3355.stockworth.databinding.FragmentMarketInfoBinding;
+import com.momi3355.stockworth.ui.home.HomeViewModel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,7 +92,8 @@ public class MarketInfoFragment extends Fragment {
                 == Configuration.UI_MODE_NIGHT_YES;
 
         // [recyclerViewAdapter 초기화]
-        recyclerViewAdapter = new RecyclerViewAdapter(rowsArrayList, isDarkMode);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        recyclerViewAdapter = new RecyclerViewAdapter(rowsArrayList, prefs, isDarkMode);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(recyclerViewAdapter);
 
@@ -117,7 +122,6 @@ public class MarketInfoFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() { //검색리스너 장착
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Toast.makeText(requireActivity(), "검색 완료", Toast.LENGTH_SHORT).show();
                 if (getActivity() != null && getView() != null) {
                     InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     //인풋관련 메니져
@@ -139,9 +143,12 @@ public class MarketInfoFragment extends Fragment {
                             TickerInfo tickerInfo = getTickerInfo(ticker_data, j);
                             rowsArrayList.add(tickerInfo);
                         }
+                        Toast.makeText(requireActivity(), "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                } else {
+                    Toast.makeText(requireActivity(), "검색 완료", Toast.LENGTH_SHORT).show();
                 }
                 return true;
             }
@@ -175,11 +182,18 @@ public class MarketInfoFragment extends Fragment {
                         == Configuration.UI_MODE_NIGHT_YES;
 
                 // [recyclerViewAdapter 초기화]
-                recyclerViewAdapter = new RecyclerViewAdapter(rowsArrayList, isDarkMode);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+                recyclerViewAdapter = new RecyclerViewAdapter(rowsArrayList, prefs, isDarkMode);
                 recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
                 recyclerView.setAdapter(recyclerViewAdapter);
                 return true;
             }
+        });
+
+        //홈에서 오는 검색뷰
+        HomeViewModel homeViewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
+        homeViewModel.getSearchQuery().observe(getViewLifecycleOwner(), query -> {
+            searchView.setQuery(query, false);
         });
 
         return root;
@@ -188,6 +202,8 @@ public class MarketInfoFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        HomeViewModel homeViewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
+        homeViewModel.setSearchQuery(""); //검색 초기화
         binding = null;
     }
 

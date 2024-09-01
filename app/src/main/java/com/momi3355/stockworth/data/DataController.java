@@ -6,6 +6,8 @@ import android.util.Log;
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.momi3355.stockworth.Server;
 
 import org.json.JSONArray;
@@ -122,9 +124,10 @@ public class DataController {
             JSONArray array = favorite.getJSONArray("data");
             for (int j = 0; j < array.length(); j++)
                 data.favoriteData.add(array.getString(j));
+            inputStream.close();
         } catch (FileNotFoundException e) {
             Log.d("DataController", "favoriteData.json 파일이 없습니다.");
-        } catch (JSONException e) {
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -142,17 +145,45 @@ public class DataController {
     }
 
     public void setTickerMap() {
-        PyObject result = stockObject.callAttr("getTickers");
-        Map<PyObject, PyObject> pythonList = result.asMap();
-        // 각 PyObject를 Integer로 변환하여 ArrayList<Integer>를 구성
-        for (PyObject key : pythonList.keySet()) {
-            PyObject value = pythonList.get(key);
-            if (value != null) {
-                tickerMap.put(key.toJava(String.class), value.toJava(String.class));
-            } else {
-                Log.e("DataController", "setTickerMap: value가 없습니다.");
-                return;
+        try {
+            FileInputStream inputStream = context.openFileInput("tickerMap.json");
+
+            JSONObject jsonObject = new JSONObject(getJsonString(inputStream));
+            JSONObject jsonMap = jsonObject.getJSONObject("data");
+            Map<String, String> map = new ObjectMapper().readValue(
+                    jsonMap.toString(), new TypeReference<HashMap<String, String>>() {});
+            tickerMap.putAll(map); //모든 데이터 삽입.
+            inputStream.close();
+        } catch (FileNotFoundException e) {
+            PyObject result = stockObject.callAttr("getTickers");
+            Map<PyObject, PyObject> pythonList = result.asMap();
+            // 각 PyObject를 Integer로 변환하여 ArrayList<Integer>를 구성
+            for (PyObject key : pythonList.keySet()) {
+                PyObject value = pythonList.get(key);
+                if (value != null) {
+                    tickerMap.put(key.toJava(String.class), value.toJava(String.class));
+                } else {
+                    Log.e("DataController", "setTickerMap: value가 없습니다.");
+                    return;
+                }
             }
+
+            try {
+                FileOutputStream outputStream = context.openFileOutput("tickerMap.json", Context.MODE_PRIVATE);
+
+                JSONObject jsonObject = new JSONObject();
+                JSONObject jsonMap = new JSONObject();
+                for (Map.Entry<String, String> entry : tickerMap.entrySet())
+                    jsonMap.put(entry.getKey(), entry.getValue());
+                jsonObject.put("data", jsonMap);
+                outputStream.write(jsonObject.toString().getBytes());
+                outputStream.close();
+                setTickerMap(); //다시 호출
+            } catch (JSONException | IOException exception) {
+                Log.e("DataController", "파일을 쓰는데 에러가 발생했습니다.");
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
         }
     }
 

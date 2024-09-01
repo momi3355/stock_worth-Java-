@@ -98,9 +98,9 @@ public class NotificationService extends Service {
 
                 String rate_arrow = (rate >= 0.00) ? "↑" : "↓";
                 String market = "코스피 " + price + "원 " + rate_arrow + rate + "%";
+                String name = prefs.getString("favoriteStock", "없음");
                 String favorite = "";
-                if (!data.favoriteStock.equals("없음")) {
-                    String name = data.favoriteStock;
+                if (!name.equals("없음")) {
                     String[] favoriteInfo = tickerInfo.getTickerInfo(date, date, tickerMap.get(name)).get(0);
                     rate = Double.parseDouble(favoriteInfo[7]);
                     price = Utils.formatNumber(Integer.parseInt(favoriteInfo[4]), 0, true);
@@ -237,16 +237,16 @@ public class NotificationService extends Service {
 
                     String rate_arrow = (rate >= 0.00) ? "↑" : "↓";
                     String market = "코스피 " + price + "원 " + rate_arrow + rate + "%";
+                    String name = prefs.getString("favoriteStock", "없음");
                     String favorite = "";
-                    if (!data.favoriteStock.equals("없음")) {
+                    if (!name.equals("없음")) {
                         JSONArray allData = data.stockData[DataType.stock_data.getIndex()]
                                 .getJSONArray("data");
-                        String name = data.favoriteStock;
                         for (int i = 0; i < allData.length(); i++) {
                             JSONArray stock_item = allData.getJSONObject(i).getJSONArray("stock_data");
                             for (int j = 0; j < stock_item.length(); j++) {
                                 item = stock_item.getJSONObject(j);
-                                Log.d("NotificationService", "onStartCommand: "+item.getString("name"));
+                                //Log.d("NotificationService", "onStartCommand: "+item.getString("name"));
                                 if (item.getString("name").equals(name)) {
                                     rate = item.getDouble("rate");
                                     price = Utils.formatNumber((int)item.getDouble("price"), 0, true);

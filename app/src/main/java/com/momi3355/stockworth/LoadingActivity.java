@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ProgressBar;
 
 import com.momi3355.stockworth.data.DataController;
@@ -42,6 +43,12 @@ public class LoadingActivity extends AppCompatActivity {
         //설정파일 초기화 (파일 없을 때만)
         PreferenceManager.setDefaultValues(this, R.xml.settings_preference, false);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getString("favoriteStock", "").equals("")) { //값이 없으면 추가
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("favoriteStock", "없음");
+            editor.apply();
+        }
+
         String theme = prefs.getString("theme", "device");
         switch (theme) {
             case "light":

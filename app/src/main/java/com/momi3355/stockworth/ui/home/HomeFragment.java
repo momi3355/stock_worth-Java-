@@ -13,6 +13,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -81,6 +82,29 @@ public class HomeFragment extends Fragment {
             View line = binding.line1;
             line.setBackgroundColor(Color.GRAY);
         }
+
+        SearchView searchView = binding.search;
+        HomeViewModel homeViewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                if (s != null) {
+                    homeViewModel.setSearchQuery(s);
+                    // [view fragment 이동]
+                    NavOptions navOptions = new NavOptions.Builder()
+                            .setPopUpTo(R.id.navigation_home, true) // 이전 목적지부터 시작하여 백스택에서 제거
+                            .build();
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.navigation_market_info, null, navOptions);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return true;
+            }
+        });
 
         try {
             update_view.setText(appData[DataType.stock_data.getIndex()].getString("update_time")); //업데이트 시간
