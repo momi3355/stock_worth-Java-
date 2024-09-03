@@ -30,7 +30,6 @@ import java.util.Map;
 public class DataController {
     private final Context context;
     private final PyObject stockObject;
-    private final HashMap<String, String> tickerMap = new HashMap<>();
     final AppData data;
 
     public DataController(Context context) {
@@ -152,7 +151,7 @@ public class DataController {
             JSONObject jsonMap = jsonObject.getJSONObject("data");
             Map<String, String> map = new ObjectMapper().readValue(
                     jsonMap.toString(), new TypeReference<HashMap<String, String>>() {});
-            tickerMap.putAll(map); //모든 데이터 삽입.
+            data.tickerMap.putAll(map); //모든 데이터 삽입.
             inputStream.close();
         } catch (FileNotFoundException e) {
             PyObject result = stockObject.callAttr("getTickers");
@@ -161,7 +160,7 @@ public class DataController {
             for (PyObject key : pythonList.keySet()) {
                 PyObject value = pythonList.get(key);
                 if (value != null) {
-                    tickerMap.put(key.toJava(String.class), value.toJava(String.class));
+                    data.tickerMap.put(key.toJava(String.class), value.toJava(String.class));
                 } else {
                     Log.e("DataController", "setTickerMap: value가 없습니다.");
                     return;
@@ -173,7 +172,7 @@ public class DataController {
 
                 JSONObject jsonObject = new JSONObject();
                 JSONObject jsonMap = new JSONObject();
-                for (Map.Entry<String, String> entry : tickerMap.entrySet())
+                for (Map.Entry<String, String> entry : data.tickerMap.entrySet())
                     jsonMap.put(entry.getKey(), entry.getValue());
                 jsonObject.put("data", jsonMap);
                 outputStream.write(jsonObject.toString().getBytes());
@@ -188,7 +187,7 @@ public class DataController {
     }
 
     public HashMap<String, String> getTickerMap() {
-        return tickerMap;
+        return data.tickerMap;
     }
 
     public static String getJsonString(InputStream is) {

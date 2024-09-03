@@ -71,6 +71,7 @@ public class TickerInfoActivity extends AppCompatActivity {
                 ((TextView)findViewById(R.id.day)).setText(date_str);
             });
 
+            Log.d("TickerInfoActivity", "run: "+date.toString());
             final ArrayList<String[]> tickerInfo = controller.getTickerInfo(date.get(1), date.get(0), ticker_id);
 
             runOnUiThread(() -> {

@@ -2,6 +2,7 @@ package com.momi3355.stockworth.data;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -13,6 +14,7 @@ import java.util.HashSet;
 public class AppData {
     public final JSONObject[] stockData = new JSONObject[DataType.getLength()];
     public final HashSet<String> favoriteData = new HashSet<>();
+    public final HashMap<String, String> tickerMap = new HashMap<>();
     private static AppData instance;
 
     private AppData() { }

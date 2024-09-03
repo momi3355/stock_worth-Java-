@@ -1,6 +1,7 @@
 package com.momi3355.stockworth.data;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DataTickerInfo {
@@ -36,7 +38,9 @@ public class DataTickerInfo {
 
     public String[] getMarketInfo(String date) {
         PyObject result = stockObject.callAttr("getMarketInfo", date, "KOSPI");
-        return result.toString().split("\\s+");
+        String[] result_list = result.toString().split("\n");
+        //Log.d("DataTickerInfo", "getMarketInfo: "+Arrays.toString(temp));
+        return result_list[2].split("\\s+"); //"\\s+"는 하나 이상의 공백을 의미
     }
 
     public ArrayList<String[]> getTickerInfo(String date1, String date2, String ticker_id) {
@@ -48,7 +52,7 @@ public class DataTickerInfo {
         String[] result_list = result.toString().split("\n");
         ArrayList<String[]> list = new ArrayList<>();
         for (int i = 2; i < result_list.length; i++) {
-            //Log.d("DataTicketInfo", result_list[i]);
+            Log.d("DataTicketInfo", result_list[i]);
             list.add(result_list[i].split("\\s+")); //"\\s+"는 하나 이상의 공백을 의미
         }
         return list;

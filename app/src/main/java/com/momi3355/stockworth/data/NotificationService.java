@@ -24,7 +24,9 @@ import org.json.JSONObject;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -86,24 +88,28 @@ public class NotificationService extends Service {
     }
 
     Runnable foreground = () -> {
-        if (controller.isPreviousOpen()) { //장 시간 중 이면
+        Log.d("NotificationService", "foreground: 알림 실행");
+        //if (controller.isPreviousOpen()) { //장 시간 중 이면
             Set<String> notifi_type = prefs.getStringSet("notification_detailed", null);
             Map<String, String> tickerMap = controller.getTickerMap(); //name to id
             if (notifi_type.contains("foreground_notification")) {
                 final String title = "주식정보";
                 String date = tickerInfo.getPreviousOpen(1).get(0);
                 String[] marketInfo = tickerInfo.getMarketInfo(date); //직접 가지고 온다.
-                double rate = Double.parseDouble(marketInfo[2]);
-                String price = Utils.formatNumber(Integer.parseInt(marketInfo[1]), 0, true);
+                //Log.d("NotificationService", Arrays.toString(marketInfo));
+                double rate = Double.parseDouble(marketInfo[3]);
+                String price = Utils.formatNumber((int)Double.parseDouble(marketInfo[2]), 0, true);
 
                 String rate_arrow = (rate >= 0.00) ? "↑" : "↓";
-                String market = "코스피 " + price + "원 " + rate_arrow + rate + "%";
+                String market = String.format(Locale.getDefault(), "코스피 %s원 %s%.2f%%", price, rate_arrow, rate);
                 String name = prefs.getString("favoriteStock", "없음");
                 String favorite = "";
+                //Log.d("NotificationService", name+":"+tickerMap.get(name));
                 if (!name.equals("없음")) {
                     String[] favoriteInfo = tickerInfo.getTickerInfo(date, date, tickerMap.get(name)).get(0);
+                    //Log.d("NotificationService", "favoriteInfo: "+Arrays.toString(favoriteInfo));
                     rate = Double.parseDouble(favoriteInfo[7]);
-                    price = Utils.formatNumber(Integer.parseInt(favoriteInfo[4]), 0, true);
+                    price = Utils.formatNumber((int)Double.parseDouble(favoriteInfo[4]), 0, true);
 
                     rate_arrow = (rate >= 0.00) ? "↑" : "↓";
                     favorite = "\n" + name + " " + price + "원 " + rate_arrow + rate + "%";
@@ -116,64 +122,49 @@ public class NotificationService extends Service {
                 notificationManager.notify(type.getIndex(), notification.build());
             }
             if (notifi_type.contains("favorites_notification")) {
-                boolean enableNotifi = false;
-                final String title = "즐겨찾기 정보";
-
                 int index = 1;
                 NotificationType type = NotificationType.favorites;
                 for (String favorite : data.favoriteData) { //즐겨찾기 한 목록
-                    if (index % 10 == 0)
+                    if (index % 50 == 0)
                         scheduler.schedule((Runnable)this, 10, TimeUnit.MILLISECONDS); //10ms 대기
                     String date = tickerInfo.getPreviousOpen(1).get(0);
                     String id = tickerMap.get(favorite);
                     String[] stockInfo = tickerInfo.getTickerInfo(date, date, id).get(0);
 
                     double rate = Double.parseDouble(stockInfo[7]);
+                    //Log.d("NotificationService", "foreground_favorites: "+id+"_"+rate);
                     String rate_arrow = (rate >= 0.00) ? "↑" : "↓";
                     String price = Utils.formatNumber(Integer.parseInt(stockInfo[4]), 0, true);
-                    if (rate < -5.00) {
-                        String text = favorite+" "+price+"("+rate_arrow+rate+"%) 5% 이하에 도달했습니다.";
-                        if (favoriteMap.containsKey(favorite)) {
-                            Pair<Boolean, Boolean> value = favoriteMap.get(favorite);
-                            if (value != null)
-                                if (value.first) continue; //값이 이미 있음.
-                                else favoriteMap.put(id, new Pair<>(true, value.second));
+
+                    if (rate <= -5.00 || rate >= 5.00) {
+                        String title = favorite+" "+price+"("+rate_arrow+rate+"%)";
+                        String text;//값이 이미 있음.
+                        if (rate <= -5.00) {
+                            text = "경고 5% 이하에 도달했습니다.";
+                        } else  { //if (rate >= 5.00)
+                            text = "알림 5% 이상에 도달했습니다.";
+                        }
+                        Pair<Boolean, Boolean> value = favoriteMap.get(id);
+                        if (value != null) {
+                            if (value.first) continue; //값이 이미 있음.
+                            else favoriteMap.put(id, new Pair<>(true, value.second));
                         } else favoriteMap.put(id, new Pair<>(true, false));
 
                         NotificationCompat.Builder notification = getStockNotification(type.getFileName(), title,
                                 text, false);
                         notificationManager.notify(LocalTime.now().getNano(), notification.build());
-                        enableNotifi = true;
-                    } else if (rate > 5.00) {
-                        String text = favorite+" "+price+"("+rate_arrow+rate+"%) 5% 이상에 도달했습니다.";
-                        if (favoriteMap.containsKey(favorite)) {
-                            Pair<Boolean, Boolean> value = favoriteMap.get(favorite);
-                            if (value != null)
-                                if (value.second) continue; //값이 이미 있음.
-                                else favoriteMap.put(id, new Pair<>(value.first, true));
-                        } else favoriteMap.put(id, new Pair<>(false, true));
 
-                        NotificationCompat.Builder notification = getStockNotification(type.getFileName(), title,
-                                text, false);
-                        notificationManager.notify(LocalTime.now().getNano(), notification.build());
-                        enableNotifi = true;
+                        //TODO : notification의 내용을 단말기에 저장
                     }
                     index++;
                 }
-
-                //그룹 본체
-                if (enableNotifi) {
-                    notificationManager.notify(
-                            type.getIndex(),
-                            getSummaryNotification(type.getFileName(), title).build());
-                }
             }
-        } else {
-            //알림은 날마다 초기화 된다.
-            if (!favoriteMap.isEmpty()) {
-                favoriteMap.clear();
-            }
-        }
+//        } else {
+//            //알림은 날마다 초기화 된다.
+//            if (!favoriteMap.isEmpty()) {
+//                favoriteMap.clear();
+//            }
+//        }
     };
 
     Runnable market = () -> {
@@ -271,7 +262,7 @@ public class NotificationService extends Service {
             }
 
             scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(foreground, 1, 15, TimeUnit.MINUTES);
+            scheduler.scheduleAtFixedRate(foreground, 0, 15, TimeUnit.MINUTES);
             scheduler.scheduleAtFixedRate(market, 0, 5, TimeUnit.MINUTES);
         }
         return START_STICKY;

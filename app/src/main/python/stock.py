@@ -54,7 +54,7 @@ def getPreviousOpen_count(countryCode, count):
 
 
 def getMarketInfo(date, market_name):
-    return stock.get_index_price_change(date, date, market_name).iloc[0]
+    return stock.get_index_price_change(date, date, market_name)
 
 
 def getTickerInfo(date1, date2, date_format, ticker_id):
@@ -91,5 +91,5 @@ if __name__ == "__main__":
     # print(update_market(['KOSPI', 'KOSDAQ'], date))
     # print(getMarket(now.strftime('%Y%m') + '08'))
     print(temp())
-
-    print(getTickerInfo("20240731", "20240801", "d", "001040"))
+    print(getMarketInfo("20240903", "KOSPI"))
+    print(getTickerInfo("20240903", "20240903", "d", "001040"))
